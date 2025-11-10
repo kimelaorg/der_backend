@@ -1,20 +1,21 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PublicCatalogViewSet, StaffProductManagementViewSet
+from .views import (
+    ProductViewSet, ProductSpecificationViewSet, ProductImageViewSet,
+    ProductVideoViewSet, DigitalProductViewSet, PublicProductDetailViewSet
+)
 
-# Create a router and register our viewsets
+# Create a router instance
 router = DefaultRouter()
 
-# Public/Customer Endpoints (Read-only view of active products)
-# Accessible via /api/products/catalog/
-router.register(r'catalog', PublicCatalogViewSet, basename='public-catalog')
-
-# Staff Management Endpoints (Full CRUD access, secured by DjangoModelPermissions)
-# Accessible via /api/products/management/
-router.register(r'management', StaffProductManagementViewSet, basename='staff-management')
+router.register(r'products', ProductViewSet)
+router.register(r'specs', ProductSpecificationViewSet)
+router.register(r'images', ProductImageViewSet)
+router.register(r'videos', ProductVideoViewSet)
+router.register(r'digital-products', DigitalProductViewSet)
+router.register(r'public-catalog', PublicProductDetailViewSet, basename='public-product')
 
 
 urlpatterns = [
-    # All product catalog endpoints are exposed under /api/products/
     path('', include(router.urls)),
 ]

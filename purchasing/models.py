@@ -45,6 +45,7 @@ class StockReception(models.Model):
     """Records the reception of items from a PO into inventory."""
     purchase_order_item = models.ForeignKey(PurchaseOrderItem, on_delete=models.PROTECT, related_name='receptions')
     quantity_received = models.PositiveIntegerField()
+    decayed_products = models.PositiveIntegerField(default=0)
     received_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, help_text="Staff member who recorded the reception.")
     reception_date = models.DateTimeField(default=timezone.now)
 

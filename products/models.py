@@ -21,7 +21,7 @@ class Product(models.Model):
 
     # Use timezone.now without parentheses for call on object creation
     created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(null = True)
 
     class Meta:
         verbose_name = _("Product")

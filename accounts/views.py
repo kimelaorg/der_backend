@@ -28,7 +28,7 @@ class RegisterUserView(generics.CreateAPIView):
         if serializer.is_valid(raise_exception = True):
             user = serializer.save()
 
-            customer_group, created = Group.objects.filter(Q(name='Customer'),).get_or_create(Q(name='Customer'))
+            customer_group, created = Group.objects.filter(Q(name='Customer'),).get_or_create(name='Customer')
             user.groups.add(customer_group)
 
             message = 'Registration success. OTP sent for verification.'

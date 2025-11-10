@@ -1,6 +1,8 @@
 from django.urls import path, include
 from . import views as v
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 router = DefaultRouter()
 
@@ -18,6 +20,7 @@ urlpatterns = [
     # Login and 2FA
     path('login/', v.RequestLoginOTPView.as_view(), name='login'),
     path('login/verify-otp/', v.LoginWithOTPView.as_view(), name='verify-login-otp'),
+    path('token/refresh/', TokenRefreshView.as_view()),
 
     # Requesting OTP (Re-send functionality)
     path('request/password-reset-otp/', v.RequestPasswordResetOtpView.as_view(), name='request-password-reset-otp'),
