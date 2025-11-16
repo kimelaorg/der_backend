@@ -131,6 +131,7 @@ class PublicProductSpecificationSerializer(serializers.ModelSerializer):
     screen_size_name = serializers.CharField(source='screen_size.name', read_only=True)
     resolution_name = serializers.CharField(source='resolution.name', read_only=True)
     panel_type_name = serializers.CharField(source='panel_type.name', read_only=True)
+    brand_name = serializers.CharField(source='brand.name', read_only=True)
 
     # Method Fields
     supported_internet_services_names = serializers.SerializerMethodField()
@@ -164,7 +165,7 @@ class PublicProductSpecificationSerializer(serializers.ModelSerializer):
             'id', 'electrical_specs', 'images', 'videos', 'connectivity_details',
             'screen_size_name', 'resolution_name', 'panel_type_name',
             'supported_internet_services_names', 'sku', 'original_price',
-            'sale_price', 'color', 'smart_features', 'screen_size',
+            'sale_price', 'color', 'smart_features', 'screen_size', 'brand_name',
             'resolution', 'panel_type', 'supported_internet_services', 'quantity_in_stock'
         )
 
@@ -173,14 +174,13 @@ class PublicProductSpecificationSerializer(serializers.ModelSerializer):
 class PublicProductDetailSerializer(serializers.ModelSerializer):
     product_specs = PublicProductSpecificationSerializer(many=True, read_only=True) # uses related_name='product_specs'
     digital_details = PublicDigitalProductDetailSerializer(read_only=True) # uses related_name='digital_details'
-    brand_name = serializers.CharField(source='brand.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
 
 
     class Meta:
         model = Product
         fields = (
-            'id', 'name', 'description', 'brand', 'brand_name', 'category',
+            'id', 'name', 'description', 'category',
             'category_name', 'is_active', 'product_specs', 'digital_details',
             'created_at', 'updated_at'
         )

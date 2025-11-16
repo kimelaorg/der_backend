@@ -11,11 +11,7 @@ class Brand(models.Model):
     Used as a lookup for the 'products' app.
     """
     name = models.CharField(max_length=100, unique=True, verbose_name=_("Brand Name"))
-    description = models.TextField(blank=True, verbose_name=_("Description"))
-
-    # FIX: Removed parentheses from timezone.now()
     created_at = models.DateTimeField(default = timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _("Brand")
@@ -73,16 +69,12 @@ class Supplier(models.Model):
     """
     name = models.CharField(max_length=150, unique=True, verbose_name=_("Supplier Name"))
     contact_person = models.CharField(max_length=100, blank=True, verbose_name=_("Contact Person"))
-    # Changed phone field to PhoneNumberField for consistency, but kept max_length for CharField consistency
-    phone = models.CharField(max_length=20, unique=True, verbose_name=_("Phone Number"))
-    email = models.EmailField(max_length=100, blank=True, null=True, verbose_name=_("Email Address"))
+    phone = PhoneNumberField(unique=True, verbose_name=_("Phone Number"))
+    email = models.EmailField(blank=True, null=True, verbose_name=_("Email Address"))
     address = models.TextField(blank=True, verbose_name=_("Address Details"))
-
     is_active = models.BooleanField(default=True, verbose_name=_("Is Active"))
-
-    # FIX: auto_now_add is the correct practice here
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default = timezone.now)
+    updated_at = models.DateTimeField(null = True)
 
     class Meta:
         verbose_name = _("Supplier")

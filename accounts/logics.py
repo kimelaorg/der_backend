@@ -45,7 +45,7 @@ def generate_new_otp(phone_number: str, token_type: str):
         message = 'OTP for password reset sent.'
 
     else:
-        message = 'Login OTP sent.'
+        message = 'OTP code sent! Check your phone.'
 
     return Response({'message': message}, status=status.HTTP_200_OK)
 

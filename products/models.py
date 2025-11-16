@@ -1,4 +1,7 @@
 from django.db import models
+import uuid
+from django.db.models import Max
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from setups.models import (
     Brand, ProductCategory, SupportedInternetService, SupportedResolution,
@@ -12,14 +15,10 @@ class Product(models.Model):
     """
     The base definition of a commercial product (e.g., 'Samsung 4K TV Series 8').
     """
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=300)
     description = models.TextField()
-    # Assuming Brand and ProductCategory are defined in the 'setups' app
-    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name='products')
     category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT, related_name='products')
     is_active = models.BooleanField(default=True)
-
-    # Use timezone.now without parentheses for call on object creation
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null = True)
 
@@ -39,9 +38,6 @@ class ProductSpecification(models.Model):
     This is the unit of measure for Inventory, Sales, and Purchasing.
     """
     sku = models.CharField(max_length=50, unique=True, verbose_name="SKU")
-
-    # CRITICAL CHANGE: Changed OneToOneField to ForeignKey. This allows a single
-    # Product (base model) to have multiple Specifications (variants/SKUs).
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -49,13 +45,13 @@ class ProductSpecification(models.Model):
         verbose_name="Base Product"
     )
 
-    # Specialized Fields (Assumed to be Foreign Keys to models in 'setups' app)
+    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name='products')
     screen_size = models.ForeignKey(ScreenSize, on_delete=models.PROTECT)
     resolution = models.ForeignKey(SupportedResolution, on_delete=models.PROTECT)
     panel_type = models.ForeignKey(PanelType, on_delete=models.PROTECT)
-
     original_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2)
+    model = models.CharField(max_length = 255, unique = True)
 
     color = models.CharField(max_length=20, blank=True, null=True)
     smart_features = models.BooleanField(default=False)
@@ -65,18 +61,45 @@ class ProductSpecification(models.Model):
         verbose_name = _("Product Specification (SKU)")
         verbose_name_plural = _("Product Specifications (SKUs)")
 
-    def generate_sku(self):
-        """Generates a simple SKU based on attributes."""
-        # Note: Added checks for related objects in case they are not yet set
-        brand = self.product.brand.name[:3].upper() if (self.product and self.product.brand) else 'PROD'
-        category = self.product.category.name[:2].upper() if (self.product and self.product.category) else 'CAT'
-        color = self.color[:3].upper() if self.color else 'CLR'
-        return f"{brand}-{category}-{color}"
+    def _generate_base_sku(self):
+        """Generates the base portion of the SKU."""
+        try:
+            brand = self.brand.name[:3].upper()
+            category = self.product.category.name[:2].upper()
+            color = self.color[:3].upper() if self.color else 'GEN'
+            return f"{brand}-{category}-{color}"
+        except AttributeError:
+            # Fallback if related objects are unexpectedly missing during save
+            return "SKU-ERROR"
 
     def save(self, *args, **kwargs):
-        """Ensures the SKU is generated before saving if it's missing."""
-        if not self.sku:
-            self.sku = self.generate_sku()
+        """
+        Ensures the SKU is unique by appending a counter if a conflict is found.
+        """
+        # Only generate SKU if it's a new object or the SKU is explicitly empty
+        if not self.pk or not self.sku:
+            base_sku = self._generate_base_sku()
+
+            # Use the base_sku as the initial check
+            new_sku = base_sku
+            counter = 0
+
+            # Loop until a unique SKU is found
+            while ProductSpecification.objects.filter(sku=new_sku).exists():
+                counter += 1
+                # Append a sequential counter (e.g., BASE-01, BASE-02)
+                new_sku = f"{base_sku}-{counter:02d}"
+
+                # Safety break to prevent infinite loop (e.g., if database is massive and slow)
+                if counter > 99:
+                    # Consider raising a hard error or switching to a hash
+                    new_sku = f"{base_sku}-{uuid.uuid4().hex[:4].upper()}"
+                    if ProductSpecification.objects.filter(sku=new_sku).exists():
+                         raise ValidationError("Could not generate a unique SKU after 100 attempts and hash fallback.")
+                    break
+
+            self.sku = new_sku
+
         super().save(*args, **kwargs)
 
     def __str__(self):

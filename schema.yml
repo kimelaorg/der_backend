@@ -258,6 +258,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/RequestOTP'
           description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: api_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
   /api/auth/users/:
     get:
       operationId: api_auth_users_list
@@ -1100,7 +1127,7 @@ paths:
       - in: query
         name: brand
         schema:
-          type: integer
+          type: number
       - name: ordering
         required: false
         in: query
@@ -4591,13 +4618,7 @@ components:
           type: string
           title: Brand Name
           maxLength: 100
-        description:
-          type: string
         created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
           type: string
           format: date-time
           readOnly: true
@@ -4605,7 +4626,6 @@ components:
       - created_at
       - id
       - name
-      - updated_at
     ConfirmPasswordReset:
       type: object
       description: |-
@@ -4801,6 +4821,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -4967,13 +4988,7 @@ components:
           type: string
           title: Brand Name
           maxLength: 100
-        description:
-          type: string
         created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
           type: string
           format: date-time
           readOnly: true
@@ -5069,6 +5084,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedLicenceType:
       type: object
       properties:
@@ -5125,7 +5141,7 @@ components:
           readOnly: true
         name:
           type: string
-          maxLength: 255
+          maxLength: 300
         description:
           type: string
         is_active:
@@ -5138,8 +5154,7 @@ components:
           type: string
           format: date-time
           readOnly: true
-        brand:
-          type: integer
+          nullable: true
         category:
           type: integer
     PatchedProductCategory:
@@ -5208,6 +5223,9 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        model:
+          type: string
+          maxLength: 255
         color:
           type: string
           nullable: true
@@ -5217,6 +5235,8 @@ components:
         product:
           type: integer
           title: Base Product
+        brand:
+          type: integer
         screen_size:
           type: integer
         resolution:
@@ -5243,6 +5263,11 @@ components:
         id:
           type: integer
           readOnly: true
+        po_number:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Custom, sequential, and read-friendly Purchase Order Number.
         supplier:
           type: integer
         supplier_name:
@@ -5429,13 +5454,13 @@ components:
         phone:
           type: string
           title: Phone Number
-          maxLength: 20
+          maxLength: 128
         email:
           type: string
           format: email
           nullable: true
           title: Email Address
-          maxLength: 100
+          maxLength: 254
         address:
           type: string
           title: Address Details
@@ -5449,6 +5474,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedSupportedInternetService:
       type: object
       properties:
@@ -5558,7 +5584,7 @@ components:
           readOnly: true
         name:
           type: string
-          maxLength: 255
+          maxLength: 300
         description:
           type: string
         is_active:
@@ -5571,12 +5597,10 @@ components:
           type: string
           format: date-time
           readOnly: true
-        brand:
-          type: integer
+          nullable: true
         category:
           type: integer
       required:
-      - brand
       - category
       - created_at
       - description
@@ -5660,6 +5684,9 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        model:
+          type: string
+          maxLength: 255
         color:
           type: string
           nullable: true
@@ -5669,6 +5696,8 @@ components:
         product:
           type: integer
           title: Base Product
+        brand:
+          type: integer
         screen_size:
           type: integer
         resolution:
@@ -5676,7 +5705,9 @@ components:
         panel_type:
           type: integer
       required:
+      - brand
       - id
+      - model
       - original_price
       - panel_type
       - product
@@ -5756,14 +5787,9 @@ components:
           readOnly: true
         name:
           type: string
-          maxLength: 255
+          maxLength: 300
         description:
           type: string
-        brand:
-          type: integer
-        brand_name:
-          type: string
-          readOnly: true
         category:
           type: integer
         category_name:
@@ -5786,10 +5812,8 @@ components:
         updated_at:
           type: string
           format: date-time
-          readOnly: true
+          nullable: true
       required:
-      - brand
-      - brand_name
       - category
       - category_name
       - description
@@ -5797,7 +5821,6 @@ components:
       - id
       - name
       - product_specs
-      - updated_at
     PublicProductSpecification:
       type: object
       properties:
@@ -5854,6 +5877,9 @@ components:
           type: boolean
         screen_size:
           type: integer
+        brand_name:
+          type: string
+          readOnly: true
         resolution:
           type: integer
         panel_type:
@@ -5866,6 +5892,7 @@ components:
           type: string
           readOnly: true
       required:
+      - brand_name
       - connectivity_details
       - electrical_specs
       - id
@@ -5891,6 +5918,11 @@ components:
         id:
           type: integer
           readOnly: true
+        po_number:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Custom, sequential, and read-friendly Purchase Order Number.
         supplier:
           type: integer
         supplier_name:
@@ -5934,6 +5966,7 @@ components:
       - items
       - order_total
       - po_date
+      - po_number
       - po_status_display
       - supplier
       - supplier_name
@@ -6215,13 +6248,13 @@ components:
         phone:
           type: string
           title: Phone Number
-          maxLength: 20
+          maxLength: 128
         email:
           type: string
           format: email
           nullable: true
           title: Email Address
-          maxLength: 100
+          maxLength: 254
         address:
           type: string
           title: Address Details
@@ -6235,6 +6268,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -6299,6 +6333,17 @@ components:
         * `8K` - 8K UHD
         * `HD` - HD Ready
         * `FHD` - Full HD
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
     User:
       type: object
       description: General serializer for reading/updating user profile details.
