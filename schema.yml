@@ -637,6 +637,177 @@ paths:
               schema:
                 $ref: '#/components/schemas/Inventory'
           description: ''
+  /api/mega/products/:
+    get:
+      operationId: api_mega_products_list
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MegaProduct'
+          description: ''
+    post:
+      operationId: api_mega_products_create
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MegaProduct'
+          description: ''
+  /api/mega/products/{id}/:
+    get:
+      operationId: api_mega_products_retrieve
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MegaProduct'
+          description: ''
+    put:
+      operationId: api_mega_products_update
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MegaProduct'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MegaProduct'
+          description: ''
+    patch:
+      operationId: api_mega_products_partial_update
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMegaProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMegaProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMegaProduct'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MegaProduct'
+          description: ''
+    delete:
+      operationId: api_mega_products_destroy
+      description: |-
+        A ViewSet for viewing and editing Product instances, including nested
+        creation of ProductSpecification and related components.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
   /api/products/digital-products/:
     get:
       operationId: api_products_digital_products_list
@@ -1864,6 +2035,408 @@ paths:
         schema:
           type: integer
         description: A unique integer value identifying this Stock Reception Record.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/sales/customer/:
+    post:
+      operationId: api_sales_customer_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerDetail'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetail'
+          description: ''
+  /api/sales/customer-lookup/:
+    get:
+      operationId: api_sales_customer_lookup_retrieve
+      description: |-
+        Staff endpoint to lookup customer details by phone number.
+        Only authenticated users (staff) should access this.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetail'
+          description: ''
+  /api/sales/orders/:
+    get:
+      operationId: api_sales_orders_retrieve
+      description: Customer-facing order creation and retrieval endpoint (self-service).
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_sales_orders_create
+      description: Places a new order using the authenticated user as the customer.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrder'
+          description: ''
+  /api/sales/orders/{id}/:
+    get:
+      operationId: api_sales_orders_retrieve_2
+      description: Customer-facing order creation and retrieval endpoint (self-service).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_sales_orders_update
+      description: Customer-facing order creation and retrieval endpoint (self-service).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalesOrder'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrder'
+          description: ''
+    patch:
+      operationId: api_sales_orders_partial_update
+      description: Customer-facing order creation and retrieval endpoint (self-service).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalesOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalesOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalesOrder'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrder'
+          description: ''
+    delete:
+      operationId: api_sales_orders_destroy
+      description: Customer-facing order creation and retrieval endpoint (self-service).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/sales/sales/:
+    get:
+      operationId: api_sales_sales_list
+      description: |-
+        Provides staff access to view the list of all sales and retrieve specific
+        sale details for audit and reporting purposes. (Read-Only)
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SaleDetail'
+          description: ''
+  /api/sales/sales-records/:
+    get:
+      operationId: api_sales_sales_records_list
+      description: |-
+        ViewSet for managing Sale transactions, incorporating the RBAC policy.
+
+        Uses SaleTransactionSerializer (write/input for create)
+        and SaleDetailSerializer (read/output for list/retrieve).
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SaleDetail'
+          description: ''
+    post:
+      operationId: api_sales_sales_records_create
+      description: Handles the POST request to record a new sale transaction.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleTransaction'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleTransaction'
+          description: ''
+  /api/sales/sales-records/{id}/:
+    get:
+      operationId: api_sales_sales_records_retrieve
+      description: |-
+        ViewSet for managing Sale transactions, incorporating the RBAC policy.
+
+        Uses SaleTransactionSerializer (write/input for create)
+        and SaleDetailSerializer (read/output for list/retrieve).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleDetail'
+          description: ''
+  /api/sales/sales/{id}/:
+    get:
+      operationId: api_sales_sales_retrieve
+      description: |-
+        Provides staff access to view the list of all sales and retrieve specific
+        sale details for audit and reporting purposes. (Read-Only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Transaction.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleDetail'
+          description: ''
+  /api/sales/staff-orders/:
+    get:
+      operationId: api_sales_staff_orders_retrieve
+      description: Staff-facing order creation and management.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_sales_staff_orders_create
+      description: Creates an order on behalf of a customer, setting the requesting
+        user as staff_creator.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/sales/staff-orders/{id}/:
+    get:
+      operationId: api_sales_staff_orders_retrieve_2
+      description: Staff-facing order creation and management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_sales_staff_orders_update
+      description: Staff-facing order creation and management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: api_sales_staff_orders_partial_update
+      description: Staff-facing order creation and management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_sales_staff_orders_destroy
+      description: Staff-facing order creation and management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sales Order.
         required: true
       tags:
       - api
@@ -4680,6 +5253,7 @@ components:
       - Ethernet
       - USB
       - RF
+      - AV
       - Coaxial
       - Screen Mirroring
       type: string
@@ -4690,8 +5264,65 @@ components:
         * `Ethernet` - Ethernet
         * `USB` - USB
         * `RF` - RF
+        * `AV` - AV
         * `Coaxial` - Coaxial
         * `Screen Mirroring` - Screen Mirroring
+    CustomerDetail:
+      type: object
+      description: Minimal serializer for displaying customer info within an Order.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+        phone_number:
+          type: string
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - phone_number
+    CustomerRead:
+      type: object
+      description: Used for displaying customer details in a completed Sale.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - phone_number
     DigitalProduct:
       type: object
       properties:
@@ -4886,6 +5517,182 @@ components:
       required:
       - password
       - phone_number
+    MegaElectricalSpecification:
+      type: object
+      properties:
+        voltage:
+          type: string
+          maxLength: 50
+        max_wattage:
+          type: string
+          nullable: true
+          maxLength: 50
+        frequency:
+          type: string
+          maxLength: 20
+    MegaProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        category:
+          type: integer
+        category_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        specification:
+          $ref: '#/components/schemas/MegaProductSpecification'
+      required:
+      - category
+      - category_name
+      - created_at
+      - description
+      - id
+      - name
+      - specification
+    MegaProductConnectivity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        connectivity:
+          type: integer
+        connectivity_name:
+          type: string
+          readOnly: true
+        connectivity_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+      required:
+      - connectivity
+      - connectivity_name
+      - id
+    MegaProductImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image:
+          type: string
+          format: uri
+      required:
+      - id
+      - image
+    MegaProductSpecification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/SupportedResolution'
+          readOnly: true
+        screen_size:
+          allOf:
+          - $ref: '#/components/schemas/ScreenSize'
+          readOnly: true
+        screen_size_id:
+          type: integer
+          writeOnly: true
+        brand_id:
+          type: integer
+          writeOnly: true
+        resolution:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        resolution_id:
+          type: integer
+          writeOnly: true
+        panel_type_id:
+          type: integer
+          writeOnly: true
+        panel_type:
+          allOf:
+          - $ref: '#/components/schemas/PanelType'
+          readOnly: true
+        original_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        model:
+          type: string
+          maxLength: 255
+        color:
+          type: string
+          nullable: true
+          maxLength: 20
+        smart_features:
+          type: boolean
+        supported_internet_services:
+          type: array
+          items:
+            type: integer
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MegaProductImage'
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MegaProductVideo'
+        connectivity:
+          type: array
+          items:
+            $ref: '#/components/schemas/MegaProductConnectivity'
+        electrical_specs:
+          $ref: '#/components/schemas/MegaElectricalSpecification'
+      required:
+      - brand
+      - brand_id
+      - id
+      - model
+      - original_price
+      - panel_type
+      - panel_type_id
+      - resolution
+      - resolution_id
+      - sale_price
+      - screen_size
+      - screen_size_id
+      - sku
+    MegaProductVideo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        video:
+          type: string
+          format: uri
+      required:
+      - id
+      - video
     NewStaff:
       type: object
       description: Used by an Admin to create a new staff user with a temporary password.
@@ -4907,6 +5714,84 @@ components:
       - last_name
       - middle_name
       - phone_number
+    OrderItemDigital:
+      type: object
+      description: Handles Digital product line items (writeable for order creation).
+      properties:
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        line_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - line_total
+      - product
+      - product_name
+      - quantity
+      - unit_price
+    OrderItemPhysical:
+      type: object
+      description: Handles Physical product line items (writeable for order creation).
+      properties:
+        product:
+          type: integer
+        sku:
+          type: string
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        line_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - line_total
+      - product
+      - product_name
+      - quantity
+      - sku
+      - unit_price
+    OrderStatusEnum:
+      enum:
+      - PENDING
+      - PAID
+      - FULFILLED
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending Payment
+        * `PAID` - Paid, Awaiting Fulfillment
+        * `FULFILLED` - Fulfilled/Shipped
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
     PaginatedProductCategoryList:
       type: object
       required:
@@ -5098,6 +5983,30 @@ components:
           $ref: '#/components/schemas/LicenceTypeNameEnum'
         description:
           type: string
+    PatchedMegaProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        category:
+          type: integer
+        category_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        specification:
+          $ref: '#/components/schemas/MegaProductSpecification'
     PatchedPanelType:
       type: object
       properties:
@@ -5212,6 +6121,10 @@ components:
             type: integer
         electrical_specs:
           $ref: '#/components/schemas/ElectricalSpecification'
+        product_connectivity:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductConnectivity'
         sku:
           type: string
           readOnly: true
@@ -5280,7 +6193,7 @@ components:
           description: Date the PO was created.
         expected_delivery_date:
           type: string
-          format: date
+          format: date-time
           nullable: true
         po_status:
           $ref: '#/components/schemas/PoStatusEnum'
@@ -5313,6 +6226,84 @@ components:
         name:
           type: string
           maxLength: 45
+    PatchedSalesOrder:
+      type: object
+      description: |-
+        Handles read operations for Orders and the complex write/create operations
+        for customers checking out.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order_id:
+          type: string
+          readOnly: true
+          description: Custom unique ID, e.g., ORD-YYYY-UNIQUE_PART
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_details:
+          allOf:
+          - $ref: '#/components/schemas/CustomerDetail'
+          readOnly: true
+        order_date:
+          type: string
+          format: date-time
+          readOnly: true
+        order_status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        order_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        is_digital:
+          type: boolean
+          readOnly: true
+          description: True if the order contains only digital products.
+        shipping_method:
+          type: integer
+          nullable: true
+        shipping_method_name:
+          type: string
+          readOnly: true
+        shipping_address:
+          type: integer
+          nullable: true
+        shipping_address_line:
+          type: string
+          readOnly: true
+        staff_creator:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        physical_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemPhysical'
+          readOnly: true
+        digital_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDigital'
+          readOnly: true
+        new_physical_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemPhysical'
+          writeOnly: true
+        new_digital_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDigital'
+          writeOnly: true
     PatchedScreenSize:
       type: object
       properties:
@@ -5562,6 +6553,32 @@ components:
       - id
       - name
       - updated_at
+    PaymentMethodEnum:
+      enum:
+      - CASH
+      - CARD
+      - MOMO
+      - TRANSFER
+      - OTHER
+      type: string
+      description: |-
+        * `CASH` - Cash
+        * `CARD` - Credit/Debit Card
+        * `MOMO` - Mobile Money
+        * `TRANSFER` - Bank Transfer
+        * `OTHER` - Other
+    PaymentStatusEnum:
+      enum:
+      - PENDING
+      - PAID
+      - FAILED
+      - REFUNDED
+      type: string
+      description: |-
+        * `PENDING` - Pending Payment
+        * `PAID` - Paid
+        * `FAILED` - Failed
+        * `REFUNDED` - Refunded
     PoStatusEnum:
       enum:
       - DRAFT
@@ -5646,6 +6663,23 @@ components:
       - name
       - parent_category_name
       - updated_at
+    ProductConnectivity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        connectivity:
+          type: integer
+        connectivity_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+      required:
+      - connectivity
+      - id
     ProductImage:
       type: object
       properties:
@@ -5673,6 +6707,10 @@ components:
             type: integer
         electrical_specs:
           $ref: '#/components/schemas/ElectricalSpecification'
+        product_connectivity:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductConnectivity'
         sku:
           type: string
           readOnly: true
@@ -5935,7 +6973,7 @@ components:
           description: Date the PO was created.
         expected_delivery_date:
           type: string
-          format: date
+          format: date-time
           nullable: true
         po_status:
           $ref: '#/components/schemas/PoStatusEnum'
@@ -6061,6 +7099,247 @@ components:
           type: string
       required:
       - phone_number
+    SaleDetail:
+      type: object
+      description: Used to retrieve and display a completed sales invoice.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sale_date:
+          type: string
+          format: date-time
+          readOnly: true
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethodEnum'
+          readOnly: true
+        payment_status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        sales_outlet:
+          type: integer
+          readOnly: true
+          nullable: true
+        sales_outlet_name:
+          type: string
+          title: Location Name
+          readOnly: true
+        sales_agent:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        sales_agent_name:
+          type: string
+          readOnly: true
+        customer:
+          allOf:
+          - $ref: '#/components/schemas/CustomerRead'
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleItemRead'
+          readOnly: true
+      required:
+      - customer
+      - id
+      - items
+      - payment_method
+      - payment_status
+      - sale_date
+      - sales_agent
+      - sales_agent_name
+      - sales_outlet
+      - sales_outlet_name
+      - status
+      - total_amount
+    SaleItemRead:
+      type: object
+      description: Used for displaying line item details in a completed Sale.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_specification:
+          type: integer
+          readOnly: true
+        product_sku:
+          type: string
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        quantity:
+          type: integer
+          readOnly: true
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        unit_measure:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - id
+      - product_name
+      - product_sku
+      - product_specification
+      - quantity
+      - unit_measure
+      - unit_price
+    SaleItemWrite:
+      type: object
+      description: Used to validate the incoming item list for a new Sale.
+      properties:
+        product_specification_id:
+          type: integer
+        quantity:
+          type: integer
+          minimum: 1
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_measure:
+          type: string
+          nullable: true
+          maxLength: 50
+      required:
+      - product_specification_id
+      - quantity
+      - unit_price
+    SaleTransaction:
+      type: object
+      description: |-
+        Handles the atomic creation of Sale, SaleItem records, StockMovement,
+        and updates the Inventory quantity. This is the POS endpoint serializer.
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          nullable: true
+        sales_outlet:
+          type: integer
+          nullable: true
+        payment_method:
+          type: string
+        payment_status:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleItemWrite'
+      required:
+      - items
+      - payment_method
+      - payment_status
+    SalesOrder:
+      type: object
+      description: |-
+        Handles read operations for Orders and the complex write/create operations
+        for customers checking out.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order_id:
+          type: string
+          readOnly: true
+          description: Custom unique ID, e.g., ORD-YYYY-UNIQUE_PART
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+        customer_details:
+          allOf:
+          - $ref: '#/components/schemas/CustomerDetail'
+          readOnly: true
+        order_date:
+          type: string
+          format: date-time
+          readOnly: true
+        order_status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        order_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        is_digital:
+          type: boolean
+          readOnly: true
+          description: True if the order contains only digital products.
+        shipping_method:
+          type: integer
+          nullable: true
+        shipping_method_name:
+          type: string
+          readOnly: true
+        shipping_address:
+          type: integer
+          nullable: true
+        shipping_address_line:
+          type: string
+          readOnly: true
+        staff_creator:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        physical_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemPhysical'
+          readOnly: true
+        digital_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDigital'
+          readOnly: true
+        new_physical_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemPhysical'
+          writeOnly: true
+        new_digital_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDigital'
+          writeOnly: true
+      required:
+      - customer
+      - customer_details
+      - digital_items
+      - id
+      - is_digital
+      - order_date
+      - order_id
+      - order_status
+      - order_total
+      - physical_items
+      - shipping_address_line
+      - shipping_method_name
+      - staff_creator
+      - status_display
     ScreenSize:
       type: object
       properties:
@@ -6170,6 +7449,16 @@ components:
       description: |-
         * `KEY` - Issue License Key
         * `ACCESS` - Grant Video Access
+    StatusEnum:
+      enum:
+      - COMPLETED
+      - CANCELLED
+      - REFUNDED
+      type: string
+      description: |-
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+        * `REFUNDED` - Refunded
     StockReception:
       type: object
       description: Serializer for recording stock reception against a specific PO
@@ -6209,7 +7498,6 @@ components:
       - id
       - product_name
       - purchase_order_item
-      - quantity_received
       - received_by
       - received_by_name
       - reception_date

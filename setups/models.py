@@ -144,6 +144,7 @@ class Connectivity(models.Model):
         ('Ethernet', 'Ethernet'),
         ('USB', 'USB'),
         ('RF', 'RF'),
+        ('AV', 'AV'),
         ('Coaxial', 'Coaxial'),
         ('Screen Mirroring', 'Screen Mirroring')
     ]

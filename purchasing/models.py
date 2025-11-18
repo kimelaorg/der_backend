@@ -2,6 +2,7 @@ from django.db import models
 import datetime
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.db.models import Sum, F
 from django.utils import timezone
 from setups.models import Supplier
 from products.models import Product
@@ -25,7 +26,7 @@ class PurchaseOrder(models.Model):
     )
     supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, related_name='purchase_orders')
     po_date = models.DateTimeField(default=timezone.now, help_text="Date the PO was created.")
-    expected_delivery_date = models.DateField(null=True, blank=True)
+    expected_delivery_date = models.DateTimeField(null=True, blank=True)
     po_status = models.CharField(max_length=20, choices=PO_STATUS_CHOICES, default='DRAFT')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, help_text="Staff member who created the PO.")
     order_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -34,7 +35,24 @@ class PurchaseOrder(models.Model):
         verbose_name = "Purchase Order"
         ordering = ['-po_date']
 
+    def clean(self):
+        """
+        Validation to ensure expected_delivery_date is not before po_date.
+        """
+        super().clean()
+
+        # We can compare the two DateTimeField objects directly
+        if self.expected_delivery_date and self.po_date:
+            if self.expected_delivery_date < self.po_date:
+                raise ValidationError({
+                    'expected_delivery_date':
+                    'The expected delivery date cannot be before the Purchase Order date(Today).'
+                })
+
     def save(self, *args, **kwargs):
+
+        self.full_clean()
+
         """
         Overrides the save method to generate a unique PO number before the first save.
         """
@@ -72,6 +90,7 @@ class PurchaseOrder(models.Model):
     def __str__(self):
         return f"PO {self.id} for {self.supplier.name} - {self.po_status}"
 
+
 class PurchaseOrderItem(models.Model):
     """Line item for products ordered on a PO."""
     purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name='items')
@@ -99,77 +118,83 @@ class StockReception(models.Model):
         verbose_name = "Stock Reception Record"
         ordering = ['-reception_date']
 
-    def __str__(self):
-        return f"{self.quantity_received} units of {self.purchase_order_item.product.name} received on {self.reception_date.date()}"
+    # --- Calculated Properties (for Read/Display in DRF) ---
 
     @property
-    def total_received_and_decayed(self):
-        """Calculates the total quantity from this record that accounts against the PO item."""
-        return self.quantity_received + self.decayed_products
+    def quantity_remained_for_sale(self):
+        """Calculates the quantity that is immediately available for sale from this batch."""
+        return self.quantity_received - self.decayed_products
+
+    @property
+    def quantity_remained_unreceived(self):
+        """Calculates the total quantity still expected from the PO item after all receptions."""
+        ordered_qty = self.purchase_order_item.quantity_ordered
+
+        # Calculate total accounted for (received + decayed) across ALL receptions for this item
+        total_accounted = self.purchase_order_item.receptions.aggregate(
+            sum_accounted=Sum(F('quantity_received') + F('decayed_products'), default=0)
+        )['sum_accounted']
+
+        # Ensure we don't return a negative number (though validation should prevent this)
+        return max(0, ordered_qty - total_accounted)
+
 
     # --- Validation Method ---
     def clean(self):
         super().clean()
 
-        # 1. Get total quantities previously recorded (excluding the current record if editing)
-        # Sum of all received and decayed quantities from PREVIOUS reception records for this item
-        # .exclude(pk=self.pk) ensures we don't count the current record against itself during an update
-        prior_total = StockReception.objects.filter(
-            purchase_order_item=self.purchase_order_item
-        ).exclude(pk=self.pk).aggregate(
-            received_sum=models.Sum('quantity_received', default=0),
-            decayed_sum=models.Sum('decayed_products', default=0)
-        )
+        # Rule 0: Basic check that data is present
+        if self.quantity_received is None or self.decayed_products is None:
+            raise ValidationError("Quantity received and decayed products fields must be filled.")
 
-        prior_total_received = prior_total['received_sum']
-        prior_total_decayed = prior_total['decayed_sum']
-
-        # The total quantity that accounts against the PO item if this record is saved
-        current_total_accounted = prior_total_received + prior_total_decayed + self.total_received_and_decayed
-
-        # The quantity originally ordered
         ordered_qty = self.purchase_order_item.quantity_ordered
 
-
-        # --- Rule 1: Quantity received + decayed is less than or equal to Quantity Ordered ---
-        if current_total_accounted > ordered_qty:
-            # Calculate the excess quantity to provide a helpful error message
-            excess_qty = current_total_accounted - ordered_qty
-            raise ValidationError({
-                'quantity_received': f"The total quantity received and decayed for this item (including this record) exceeds the ordered quantity ({ordered_qty}). Excess amount: {excess_qty}."
-            })
-
-        # --- Rule 2: Difference between quantity ordered and total received/decayed is equal or greater than total decay ---
-        # This rule, as stated, is confusing, so I'll interpret it as the most logical business check:
-        # "The total decay for this single reception record cannot exceed the received quantity."
-        # AND/OR
-        # "The decay and received quantity in this record must be logically separate."
-
-        # *Interpretation 1 (Simpler): Decay must be less than or equal to the received amount in THIS record.*
+        # --- Rule 1, 3: Decayed products cannot exceed quantity received in this batch ---
         if self.decayed_products > self.quantity_received:
             raise ValidationError({
-                'decayed_products': "The quantity of decayed products cannot exceed the quantity received in this single record."
+                'decayed_products': "Decayed products cannot exceed the quantity physically received in this batch."
             })
 
-        # *Interpretation 2 (More Complex - Addressing Total Logic from prompt):*
-        # The prompt mentions "total decay" vs "difference between quantity ordered and quantity received".
-        # A clearer, equivalent rule that maintains inventory integrity is:
-        # "The sum of received and decayed products in THIS record must not be zero (unless editing a zero record)."
-        if self.quantity_received == 0 and self.decayed_products == 0:
-            raise ValidationError("A reception record must have at least one unit received or decayed.")
-
-        # FINAL CHECK: The total quantity received across all receptions must be less than or equal to the ordered quantity.
-        # This is essentially Rule 1, but focused only on the final state.
-        # The `current_total_accounted <= ordered_qty` check handles this completely.
+        # --- Rule 5: Quantity Remained For Sale check (Self-validation) ---
+        # The quantity_remained_for_sale calculation (quantity_received - decayed_products)
+        # must be non-negative. This is implicitly enforced by Rule 1.
+        if self.quantity_remained_for_sale < 0: # Should not happen due to Rule 1
+             raise ValidationError("Internal error: Quantity for sale cannot be negative.")
 
 
-# --- Additional: Create a Sum property on PurchaseOrderItem for easy access ---
+        # --- Calculate Prior Totals (Received + Decayed) ---
 
-# This can be used in your DRF serializer for the quantity_received_sum field
-@property
-def total_accounted_for(self):
-    return self.receptions.aggregate(
-        total_qty=models.Sum('quantity_received', default=0) + models.Sum('decayed_products', default=0)
-    )['total_qty']
+        qs = StockReception.objects.filter(
+            purchase_order_item=self.purchase_order_item
+        )
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
 
-PurchaseOrderItem.add_to_class('total_accounted_for', total_accounted_for)
+        prior_totals = qs.aggregate(
+            prior_accounted_sum=Sum(F('quantity_received') + F('decayed_products'))
+        )
+        prior_accounted = prior_totals['prior_accounted_sum'] or 0
+
+        current_record_accounted = self.quantity_received + self.decayed_products
+        grand_total_accounted = prior_accounted + current_record_accounted
+
+
+        # --- Rule 2, 4: Grand Total Accounted cannot exceed Quantity Ordered ---
+        if grand_total_accounted > ordered_qty:
+            excess_qty = grand_total_accounted - ordered_qty
+            raise ValidationError({
+                'quantity_received': f"The total accounted quantity (Received + Decayed) for this item ({grand_total_accounted}) exceeds the ordered quantity ({ordered_qty}). Over by {excess_qty} units."
+            })
+
+        # --- Rule 6: Quantity Remained Unreceived check (Internal Check) ---
+        # Since we just verified that grand_total_accounted <= ordered_qty,
+        # the remaining unreceived quantity (ordered_qty - grand_total_accounted)
+        # will always be >= 0. This ensures the quantity unreceived never exceeds quantity ordered.
+
+    def save(self, *args, **kwargs):
+        # Always call full_clean() to ensure business rules are enforced
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantity_received} units of {self.purchase_order_item.product.name} received on {self.reception_date.date()}"

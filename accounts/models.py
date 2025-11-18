@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import uuid
 from django.conf import settings
-# from setups.models import Region
+from setups.models import Region
 from datetime import timedelta
 import secrets
 import string
@@ -117,22 +117,22 @@ class Otp(models.Model):
         )
 
 
-# class Address(models.Model):
-#     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True)
-#     district = models.CharField(max_length=100)
-#     ward = models.CharField(max_length=100)
-#     street = models.CharField(max_length=100)
-#     post_code = models.PositiveIntegerField()
-#     street_prominent_name = models.CharField(max_length=100)
-#     house_number = models.CharField(max_length=20)
-#     plot_number = models.CharField(max_length=20)
-#
-#     def __str__(self):
-#         return f"{self.street}, {self.ward}, {self.district}, {self.region}"
-#
-#
-#
-# class UserAddress(models.Model):
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
-#     address = models.ForeignKey(Address, on_delete = models.CASCADE)
-#     is_default = models.BooleanField(default=False)
+class Address(models.Model):
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True)
+    district = models.CharField(max_length=100)
+    ward = models.CharField(max_length=100)
+    street = models.CharField(max_length=100)
+    post_code = models.PositiveIntegerField()
+    street_prominent_name = models.CharField(max_length=100)
+    house_number = models.CharField(max_length=20)
+    plot_number = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"{self.street}, {self.ward}, {self.district}, {self.region}"
+
+
+
+class UserAddress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
+    address = models.ForeignKey(Address, on_delete = models.CASCADE)
+    is_default = models.BooleanField(default=False)

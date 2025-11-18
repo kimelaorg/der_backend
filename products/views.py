@@ -30,7 +30,7 @@ class IsAdminOrReadOnly(IsAuthenticatedOrReadOnly):
 
 # ====================================================================
 # A. MANAGEMENT VIEWSETS (CRUD with Search)
-# ====================================================================
+# ===================================================================
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()

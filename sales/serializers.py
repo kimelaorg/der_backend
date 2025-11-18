@@ -22,7 +22,7 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
     """Minimal serializer for displaying customer info within an Order."""
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email']
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number']
         read_only_fields = fields
 
 

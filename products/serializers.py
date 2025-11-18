@@ -4,7 +4,7 @@ from .models import (
     ProductConnectivity, ElectricalSpecification, DigitalProduct,
     DigitalProductVideo, SupportedInternetService,
 )
-from setups.models import Brand, ProductCategory, ScreenSize, SupportedResolution, PanelType
+from setups.models import Brand, ProductCategory, ScreenSize, SupportedResolution, PanelType, Connectivity
 
 
 
@@ -14,6 +14,18 @@ class ElectricalSpecificationSerializer(serializers.ModelSerializer):
         model = ElectricalSpecification
         fields = '__all__'
         read_only_fields = ('product',)
+
+
+class ProductConnectivitySerializer(serializers.ModelSerializer):
+    connectivity = serializers.PrimaryKeyRelatedField(
+        queryset=Connectivity.objects.all(),
+    )
+
+    class Meta:
+        model = ProductConnectivity
+        fields = ('id', 'connectivity', 'connectivity_count')
+        read_only_fields = ('product', 'id')
+
 
 # 1. Product Management
 class ProductSerializer(serializers.ModelSerializer):
@@ -29,31 +41,76 @@ class ProductSpecificationSerializer(serializers.ModelSerializer):
         queryset=SupportedInternetService.objects.all(),
         required=False
     )
-    # Allows for creation/update of Electrical Specs when creating/updating a Spec
+    # Allows for creation/update of Electrical Specs (One-to-One)
     electrical_specs = ElectricalSpecificationSerializer(required=False)
+
+    # CRITICAL CHANGE: Set many=True to handle a list of connections
+    product_connectivity = ProductConnectivitySerializer(many=True, required=False)
 
     class Meta:
         model = ProductSpecification
         fields = '__all__'
         read_only_fields = ('sku',)
 
-    # Handles the creation/update of the OneToOne ElectricalSpecification
     def create(self, validated_data):
         electrical_specs_data = validated_data.pop('electrical_specs', None)
+        # 1. POP the list of connectivity items
+        product_connectivity_data = validated_data.pop('product_connectivity', None)
+
         spec = super().create(validated_data)
+
         if electrical_specs_data:
             ElectricalSpecification.objects.create(product=spec, **electrical_specs_data)
+
+        # 2. CREATE: Iterate over the list and create each ProductConnectivity object
+        if product_connectivity_data:
+            for conn_data in product_connectivity_data:
+                # 📢 FIX APPLIED HERE: Extract the Primary Key (ID) from the validated object.
+                # The nested serializer validates the ID and converts it to the model instance object.
+                # We need the ID (pk) to set the foreign key (connectivity_id).
+                connectivity_instance = conn_data.pop('connectivity')
+                connectivity_id = connectivity_instance.pk
+
+                ProductConnectivity.objects.create(
+                    product=spec,
+                    connectivity_id=connectivity_id, # Set the integer ID
+                    **conn_data
+                )
         return spec
 
     def update(self, instance, validated_data):
         electrical_specs_data = validated_data.pop('electrical_specs', None)
+        # 3. POP the list of connectivity items
+        product_connectivity_data = validated_data.pop('product_connectivity', None)
+
+        # Update the main ProductSpecification instance
         instance = super().update(instance, validated_data)
+
+        # Handle Electrical Specs (One-to-One, update or create)
         if electrical_specs_data:
-            # Update existing or create new
             ElectricalSpecification.objects.update_or_create(
                 product=instance,
                 defaults=electrical_specs_data
             )
+
+        # 4. UPDATE: Handle the list of Product Connectivity objects
+        if product_connectivity_data is not None:
+
+            # CRITICAL: Delete all existing connections for this specification first
+            ProductConnectivity.objects.filter(product=instance).delete()
+
+            # Then, create the new set of connections
+            for conn_data in product_connectivity_data:
+                # 📢 FIX APPLIED HERE: Extract the Primary Key (ID) from the validated object.
+                connectivity_instance = conn_data.pop('connectivity')
+                connectivity_id = connectivity_instance.pk
+
+                ProductConnectivity.objects.create(
+                    product=instance,
+                    connectivity_id=connectivity_id, # Set the integer ID
+                    **conn_data
+                )
+
         return instance
 
 # 3. Product Image Management

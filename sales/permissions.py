@@ -40,3 +40,29 @@ class IsOwnerOrStaff(permissions.BasePermission):
 
         # Default to deny if the object doesn't have a recognizable owner field
         return False
+
+
+class IsSalesStaffOrAdmin(permissions.BasePermission):
+    """
+    Custom permission that implements the required policy:
+    1. Admin/Staff: Full access (create, list, retrieve all).
+    2. Sales Staff (Authenticated, but not admin/staff): Can CREATE and
+       can LIST/RETRIEVE only their own sales (filtering handled by get_queryset).
+    """
+
+    def has_permission(self, request, view):
+        # Must be authenticated to interact with this ViewSet
+        if not request.user.is_authenticated:
+            return False
+
+        # Admins and Staff get full permission immediately
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+
+        # Non-admin/non-staff users are allowed to perform only
+        # create (POST), list (GET), and retrieve (GET detail).
+        if view.action in ['create', 'list', 'retrieve']:
+             return True
+
+        # Deny all other actions (update, destroy, etc.)
+        return False

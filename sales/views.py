@@ -9,9 +9,7 @@ from django.utils import timezone
 from .models import Order, WishList, ShoppingCart, ShoppingCartItem, Promotion
 from .serializers import (
     SalesOrderSerializer,
-    StaffOrderSerializer,
-    BaseOrderSerializer,
-    CustomerSerializer,
+    CustomerDetailSerializer,
     WishListSerializer,
     ShoppingCartSerializer,
     PromotionSerializer,
@@ -32,7 +30,7 @@ class CustomerLookupView(generics.GenericAPIView):
     Only authenticated users (staff) should access this.
     """
     permission_classes = [IsAuthenticated]
-    serializer_class = CustomerSerializer # Assumes this serializes the User model
+    serializer_class = CustomerDetailSerializer # Assumes this serializes the User model
 
     def get(self, request, *args, **kwargs):
         phone_number = request.query_params.get('phone_number')

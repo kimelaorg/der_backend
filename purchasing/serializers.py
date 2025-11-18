@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Sum
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 from .models import PurchaseOrder, PurchaseOrderItem, StockReception, PO_STATUS_CHOICES
-# Assuming Supplier and Product are correctly imported from other apps
 from setups.models import Supplier
 from products.models import Product
 
@@ -21,7 +22,8 @@ def calculate_order_total(items_data):
 # --- 1. StockReception Serializer ---
 class StockReceptionSerializer(serializers.ModelSerializer):
     """Serializer for recording stock reception against a specific PO item."""
-    # Read-only fields for context and display
+
+    # Read-only fields for context and display (KEEP)
     product_name = serializers.CharField(source='purchase_order_item.product.name', read_only=True)
     received_by_name = serializers.CharField(source='received_by.username', read_only=True)
 
@@ -30,11 +32,41 @@ class StockReceptionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'purchase_order_item', 'product_name',
             'quantity_received',
-            # NOTE: Assuming 'decayed_products' exists on the StockReception model
             'decayed_products',
             'received_by', 'received_by_name', 'reception_date'
         ]
-        read_only_fields = ['id', 'received_by', 'reception_date']
+        # 'received_by' and 'reception_date' will be set in the view (usually by pre_save/perform_create)
+        read_only_fields = ['id', 'received_by', 'received_by_name', 'reception_date', 'product_name']
+
+    def validate(self, data):
+        """
+        Custom validation that ensures the model's clean() method is called
+        to execute complex business rules (like quantity checks).
+        """
+        # 1. Create a temporary model instance (or update the existing one)
+        if self.instance:
+            # If updating (PUT/PATCH), start with the existing instance and update fields
+            instance = self.instance
+            for attr, value in data.items():
+                setattr(instance, attr, value)
+        else:
+            # If creating (POST), create a new instance
+            instance = StockReception(**data)
+
+        # 2. Handle fields set by the view/context, otherwise full_clean() might complain.
+        # This assumes 'received_by' is passed via context or handled in create/update.
+        if not instance.received_by_id and self.context.get('request', {}).user.is_authenticated:
+            instance.received_by = self.context['request'].user
+
+        # 3. Explicitly call the model's full_clean() method
+        try:
+            instance.full_clean(exclude=['received_by']) # Exclude fields that might be defaulted later
+        except ValidationError as e:
+            # Translate Django model errors into DRF field errors
+            raise serializers.ValidationError(e.message_dict)
+
+        # 4. If validation passes, return the data
+        return data
 
 
 # --- 2. PurchaseOrderItem Serializer (Nested) ---
@@ -116,11 +148,60 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'po_date', 'created_by', 'order_total']
 
+
     def validate_items(self, items):
         """Ensure items list is not empty."""
         if not items:
             raise serializers.ValidationError("A Purchase Order must contain at least one item.")
         return items
+
+    def validate(self, data):
+        """
+        Triggers the model's full validation (including clean()) to ensure
+        expected_delivery_date is not before po_date, skipping the 'items' data.
+        """
+        # 1. Separate the nested items data
+        items_data = data.pop('items', None)
+        user = self.context['request'].user
+
+        # 2. Create a temporary instance or use the existing one for validation
+        #    Use the modified 'data' dict which no longer contains 'items'
+        instance = self.instance or PurchaseOrder(**data)
+
+        # 3. Manually update fields on the instance for validation (especially important for updates)
+        #    If self.instance exists, we need to apply the updates from 'data'
+        #    (which is everything *but* items).
+
+        if self.instance:
+            # Updating an existing instance
+            instance = self.instance
+        else:
+            # Creating a new instance: Inject the user into the initial data.
+            # We must use .copy() to avoid altering the original 'data' dict before returning it.
+            temp_data = data.copy()
+            temp_data['created_by'] = user # <--- INJECTION HERE
+            instance = PurchaseOrder(**temp_data)
+
+        # 4. Run the model's full validation
+        for key, value in data.items():
+            # Apply all direct model fields, skipping nested/read-only fields that shouldn't be set
+            if key not in ['order_total']:
+                setattr(instance, key, value)
+
+        # 5. Run the model's full validation
+        try:
+            # The instance now has a valid 'created_by' field, allowing validation to proceed
+            instance.full_clean()
+        except ValidationError as e:
+            # Re-raise the Django ValidationError as a DRF ValidationError
+            raise serializers.ValidationError(e.message_dict)
+
+        # 6. Add 'items' back to the data dictionary before returning
+        if items_data is not None:
+            data['items'] = items_data
+
+        return data
+
 
     def create(self, validated_data):
         """Create a PurchaseOrder and its nested PurchaseOrderItem instances."""

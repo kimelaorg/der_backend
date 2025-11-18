@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import datetime
 from django.conf import settings
 from products.models import DigitalProduct, ProductSpecification
 from setups.models import ShippingMethod, ProductCategory
@@ -184,21 +185,33 @@ class Order(models.Model):
         if it doesn't already exist.
         """
         if not self.order_id:
-            # Generate a 6-digit number based on a short UUID fragment
-            year = timezone.now().strftime("%Y")
+            # Wrap the generation logic in a transaction to prevent race conditions
+            # where two users save at the exact same moment.
+            with transaction.atomic():
+                # Get the current year
+                current_year = datetime.date.today().year
 
-            # Function to generate a unique part
-            def generate_unique_part():
-                return str(uuid.uuid4().int)[:6].zfill(6)
+                # Find the highest sequential number used for the current year
+                last_order = Order.objects.filter(
+                    order_id__startswith=f'#ORD-{current_year}-'
+                ).order_by('-order_id').first()
 
-            unique_part = generate_unique_part()
-            self.order_id = f"ORD-{year}-{unique_part}"
+                if last_order:
+                    # Extract the sequential part (e.g., '1278' from '#ORD-2025-1278')
+                    last_sequence_str = last_order.order_id.split('-')[-1]
+                    try:
+                        next_sequence = int(last_sequence_str) + 1
+                    except ValueError:
+                        # Fallback if the sequence part is non-numeric
+                        next_sequence = 1
+                else:
+                    # Start the sequence at 1 (or whatever base number you want, e.g., 1000)
+                    next_sequence = 1
 
-            # Ensure absolute uniqueness by re-generating if the ID already exists
-            while Order.objects.filter(order_id=self.order_id).exists():
-                unique_part = generate_unique_part()
-                self.order_id = f"ORD-{year}-{unique_part}"
+                # Format the new PO number, ensuring the sequence part is zero-padded to 4 digits
+                self.orders_id = f'#ORD-{current_year}-{next_sequence:04d}'
 
+        # Call the original save method
         super().save(*args, **kwargs)
 
     def __str__(self):

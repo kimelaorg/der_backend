@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from django.db import transaction
+from django.utils import timezone
+
+# NOTE: Assuming these imports are correct based on your previous code
 from .models import Inventory, StockMovement, WarehouseLocation
 from products.models import ProductSpecification
 from setups.serializers import RegionSerializer
-
+# NOTE: Assuming RegionSerializer and related models/imports are accessible
 
 # --- Nested Serializers for Read-Only Data ---
 
@@ -32,13 +35,14 @@ class InventorySerializer(serializers.ModelSerializer):
     Serializer for displaying the current stock status and handling direct updates
     to safety stock and location.
     """
-    # Read-only fields derived from the related ProductSpecification model
-    sku = serializers.CharField(source='product.sku', read_only=True)
-    product_name = serializers.CharField(source='product.product.name', read_only=True)
+    # OPTIMIZATION: Use ReadOnlyField for simple, non-writable nested attributes
+    sku = serializers.ReadOnlyField(source='product.sku')
+    product_name = serializers.ReadOnlyField(source='product.product.name')
 
     # Nested representation of the location
     location_details = WarehouseLocationSerializer(source='location', read_only=True)
 
+    # Note: is_low_stock should be a Property defined on the Inventory model
     is_low_stock = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -77,21 +81,23 @@ class StockAdjustmentSerializer(serializers.Serializer):
 
     def validate_product_sku(self, value):
         try:
-            # Find the ProductSpecification record via the SKU
+            # Find the ProductSpecification record via the SKU, pre-fetching the Inventory
             self.product_spec_instance = ProductSpecification.objects.select_related('inventory').get(sku=value)
             return value
         except ProductSpecification.DoesNotExist:
-            raise serializers.ValidationError(_("Product SKU does not exist."))
+            # Removed reliance on gettext for simpler error message
+            raise serializers.ValidationError("Product SKU does not exist.")
 
     def validate_adjustment_quantity(self, value):
         if value == 0:
-            raise serializers.ValidationError(_("Adjustment quantity must not be zero."))
+            raise serializers.ValidationError("Adjustment quantity must not be zero.")
 
         # Check for sufficient stock if the movement is a removal (negative value)
         if value < 0:
             current_stock = self.product_spec_instance.inventory.quantity_in_stock if self.product_spec_instance else 0
             if abs(value) > current_stock:
-                 raise serializers.ValidationError(_(f"Cannot adjust. Current stock is {current_stock}, but requested removal is {abs(value)}."))
+                 # Used f-string for clear error message
+                 raise serializers.ValidationError(f"Cannot adjust. Current stock is {current_stock}, but requested removal is {abs(value)}.")
         return value
 
     @transaction.atomic
@@ -103,6 +109,14 @@ class StockAdjustmentSerializer(serializers.Serializer):
         product_spec = self.product_spec_instance
         adjustment_quantity = validated_data['adjustment_quantity']
 
+        # 🔒 SECURITY CHECK: Ensure user is available in context for audit trail
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            # Better to handle this at the View/Permission level, but defensive coding here is good
+            raise serializers.ValidationError("Authentication context missing for audit trail.")
+
+        performed_by_user = request.user
+
         # 1. Create the StockMovement record (ADJUST type)
         movement = StockMovement.objects.create(
             product=product_spec,
@@ -110,7 +124,7 @@ class StockAdjustmentSerializer(serializers.Serializer):
             quantity_change=adjustment_quantity,
             unit_cost=validated_data.get('unit_cost', 0.00),
             reference_id=validated_data['reason'], # Using reason as reference for manual adjustments
-            performed_by=self.context['request'].user,
+            performed_by=performed_by_user,
         )
 
         # 2. Update the Inventory object atomically
@@ -129,12 +143,13 @@ class StockAdjustmentSerializer(serializers.Serializer):
 class StockMovementSerializer(serializers.ModelSerializer):
     """Serializer for displaying the audit trail of all stock movements."""
 
-    # Display the SKU and Product name
-    product_sku = serializers.CharField(source='product.sku', read_only=True)
-    product_name = serializers.CharField(source='product.product.name', read_only=True)
+    # OPTIMIZATION: Use ReadOnlyField
+    product_sku = serializers.ReadOnlyField(source='product.sku')
+    product_name = serializers.ReadOnlyField(source='product.product.name')
 
     # Display the name of the staff member
-    performed_by_name = serializers.CharField(source='performed_by.phone', read_only=True)
+    # Note: Source is 'performed_by.phone' - Ensure this is the desired audit name
+    performed_by_name = serializers.ReadOnlyField(source='performed_by.phone')
 
     class Meta:
         model = StockMovement

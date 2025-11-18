@@ -18,7 +18,7 @@ class BrandSerializer(serializers.ModelSerializer):
         model = Brand
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
-        
+
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     # Display the parent category name for easier reading
@@ -82,6 +82,7 @@ class ConnectivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Connectivity
         fields = '__all__'
+        read_only_fields = ['id']
 
 class LicenceTypeSerializer(serializers.ModelSerializer):
     name_display = serializers.CharField(source='get_name_display', read_only=True)
