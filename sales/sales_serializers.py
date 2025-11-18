@@ -28,7 +28,12 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'phone_number', 'email')
-        
+        extra_kwargs = {
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'phone_number': {'required': False},
+            'email': {'required': False},
+        }
 
 # --- 2. Transactional Serializer (Write-Only) ---
 

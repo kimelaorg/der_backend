@@ -8,8 +8,8 @@ from .sales_models import Sale
 from .sales_serializers import SaleTransactionSerializer, SaleDetailSerializer, CustomerSerializer
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
 
+User = get_user_model()
 
 class CustomerGenericView(generics.CreateAPIView):
     serializer_class = CustomerSerializer
@@ -19,37 +19,39 @@ class CustomerGenericView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data.get('phone_number')
-
-        try:
-            customer_instance = User.objects.get(phone_number=phone_number)
-            created = False
-
-            response_serializer = CustomerSerializer(customer_instance)
-
-            # print(f"Customer retrieved: ID {customer_instance.id}")
-
-        except User.DoesNotExist:
-            created = True
-
-            customer_instance = serializer.save()
-
-            try:
-                customer_group, created = Group.objects.filter(Q(name='Customer'),).get_or_create(name='Customer')
-                customer_instance.groups.add(customer_group)
-                # print(f"New Customer ID {customer_instance.id} assigned to group 'Customer'")
-            except Group.DoesNotExist:
-                print("WARNING: 'Customer' group does not exist.")
-
-            response_serializer = CustomerSerializer(customer_instance)
-
-            # print(f"New Customer created: ID {customer_instance.id}")
-
-        headers = self.get_success_headers(response_serializer.data)
-
-        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-
-        return Response(response_serializer.data, status=status_code, headers=headers)
+        serializer.save()
+        return Response(serializer.data)
+        # phone_number = serializer.validated_data.get('phone_number')
+        #
+        # try:
+        #     customer_instance = User.objects.get(phone_number=phone_number)
+        #     created = False
+        #
+        #     response_serializer = CustomerSerializer(customer_instance)
+        #
+        #     # print(f"Customer retrieved: ID {customer_instance.id}")
+        #
+        # except User.DoesNotExist:
+        #     created = True
+        #
+        #     customer_instance = serializer.save()
+        #
+        #     try:
+        #         customer_group = Group.objects.get(name='Customer')
+        #         customer_instance.groups.add(customer_group)
+        #         # print(f"New Customer ID {customer_instance.id} assigned to group 'Customer'")
+        #     except Group.DoesNotExist:
+        #         print("WARNING: 'Customer' group does not exist.")
+        #
+        #     response_serializer = CustomerSerializer(customer_instance)
+        #
+        #     # print(f"New Customer created: ID {customer_instance.id}")
+        #
+        # headers = self.get_success_headers(response_serializer.data)
+        #
+        # status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        #
+        # return Response(response_serializer.data, status=status_code, headers=headers)
 
 
 
@@ -72,7 +74,7 @@ class SalesViewSet(
     serializer_class = SaleTransactionSerializer
 
     # You must define a base queryset for the mixins to work.
-    # queryset = Sale.objects.all() # Uncomment and ensure Sale model is imported
+    queryset = Sale.objects.all() 
 
     def get_queryset(self):
         """
