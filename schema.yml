@@ -454,6 +454,483 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/expenses/categories/:
+    get:
+      operationId: api_expenses_categories_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+    post:
+      operationId: api_expenses_categories_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/expenses/categories/{id}/:
+    get:
+      operationId: api_expenses_categories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: api_expenses_categories_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: api_expenses_categories_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: api_expenses_categories_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/expenses/data/:
+    get:
+      operationId: api_expenses_data_list
+      description: |-
+        A ViewSet for managing Expense records.
+
+        - Requires authentication for all actions.
+        - Admins see all expenses.
+        - Non-admin users only see their own expenses.
+        - Automatically assigns the logged-in user to the 'user' field on creation.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseDetail'
+          description: ''
+    post:
+      operationId: api_expenses_data_create
+      description: Sets the 'user' field to the currently logged-in user before saving.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseDetail'
+          description: ''
+  /api/expenses/data/{id}/:
+    get:
+      operationId: api_expenses_data_retrieve
+      description: |-
+        A ViewSet for managing Expense records.
+
+        - Requires authentication for all actions.
+        - Admins see all expenses.
+        - Non-admin users only see their own expenses.
+        - Automatically assigns the logged-in user to the 'user' field on creation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseDetail'
+          description: ''
+    put:
+      operationId: api_expenses_data_update
+      description: |-
+        A ViewSet for managing Expense records.
+
+        - Requires authentication for all actions.
+        - Admins see all expenses.
+        - Non-admin users only see their own expenses.
+        - Automatically assigns the logged-in user to the 'user' field on creation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExpenseDetail'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseDetail'
+          description: ''
+    patch:
+      operationId: api_expenses_data_partial_update
+      description: |-
+        A ViewSet for managing Expense records.
+
+        - Requires authentication for all actions.
+        - Admins see all expenses.
+        - Non-admin users only see their own expenses.
+        - Automatically assigns the logged-in user to the 'user' field on creation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseDetail'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseDetail'
+          description: ''
+    delete:
+      operationId: api_expenses_data_destroy
+      description: |-
+        A ViewSet for managing Expense records.
+
+        - Requires authentication for all actions.
+        - Admins see all expenses.
+        - Non-admin users only see their own expenses.
+        - Automatically assigns the logged-in user to the 'user' field on creation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/expenses/payees/:
+    get:
+      operationId: api_expenses_payees_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payee'
+          description: ''
+    post:
+      operationId: api_expenses_payees_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payee'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payee'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payee'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payee'
+          description: ''
+  /api/expenses/payees/{id}/:
+    get:
+      operationId: api_expenses_payees_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payee.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payee'
+          description: ''
+    put:
+      operationId: api_expenses_payees_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payee.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payee'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payee'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payee'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payee'
+          description: ''
+    patch:
+      operationId: api_expenses_payees_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payee.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPayee'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPayee'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPayee'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payee'
+          description: ''
+    delete:
+      operationId: api_expenses_payees_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payee.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/inventory/management/:
     get:
       operationId: api_inventory_management_list
@@ -2044,32 +2521,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/sales/customer/:
-    post:
-      operationId: api_sales_customer_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerDetail'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CustomerDetail'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/CustomerDetail'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomerDetail'
-          description: ''
   /api/sales/customer-lookup/:
     get:
       operationId: api_sales_customer_lookup_retrieve
@@ -2087,6 +2538,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerDetail'
+          description: ''
+  /api/sales/customers/:
+    post:
+      operationId: api_sales_customers_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
           description: ''
   /api/sales/orders/:
     get:
@@ -2310,7 +2787,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: string
+          type: integer
+        description: A unique integer value identifying this Sale Transaction.
         required: true
       tags:
       - api
@@ -5181,6 +5659,49 @@ paths:
           description: No response body
 components:
   schemas:
+    Address:
+      type: object
+      description: |-
+        Serializes the Address model. The 'region' is mandatory on the model
+        (and thus, if an address exists, it should be present). Other fields are included
+        but will display null/empty if not present in the database.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Region'
+          readOnly: true
+        district:
+          type: string
+          maxLength: 100
+        ward:
+          type: string
+          maxLength: 100
+        street:
+          type: string
+          maxLength: 100
+        post_code:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        street_prominent_name:
+          type: string
+          maxLength: 100
+        house_number:
+          type: string
+          maxLength: 20
+      required:
+      - district
+      - house_number
+      - id
+      - post_code
+      - region
+      - street
+      - street_prominent_name
+      - ward
     Brand:
       type: object
       properties:
@@ -5199,6 +5720,19 @@ components:
       - created_at
       - id
       - name
+    Category:
+      type: object
+      description: Serializes the essential fields of the Category model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category_name:
+          type: string
+          maxLength: 100
+      required:
+      - category_name
+      - id
     ConfirmPasswordReset:
       type: object
       description: |-
@@ -5267,6 +5801,19 @@ components:
         * `AV` - AV
         * `Coaxial` - Coaxial
         * `Screen Mirroring` - Screen Mirroring
+    Customer:
+      type: object
+      description: Used for displaying customer details in a completed Sale.
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
     CustomerDetail:
       type: object
       description: Minimal serializer for displaying customer info within an Order.
@@ -5289,34 +5836,6 @@ components:
         phone_number:
           type: string
           readOnly: true
-      required:
-      - email
-      - first_name
-      - id
-      - last_name
-      - phone_number
-    CustomerRead:
-      type: object
-      description: Used for displaying customer details in a completed Sale.
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        first_name:
-          type: string
-          readOnly: true
-        last_name:
-          type: string
-          readOnly: true
-        phone_number:
-          type: string
-          readOnly: true
-        email:
-          type: string
-          format: email
-          readOnly: true
-          nullable: true
       required:
       - email
       - first_name
@@ -5402,6 +5921,64 @@ components:
       required:
       - id
       - product
+    ExpenseDetail:
+      type: object
+      description: |-
+        The main serializer for an Expense record, nesting all related data
+        (User, Category, Payee, Address, and Region).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          readOnly: true
+        expense_date:
+          type: string
+          format: date
+          title: Date
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Amount Spent
+        description:
+          type: string
+          nullable: true
+          title: Details/Notes
+        payment_method:
+          $ref: '#/components/schemas/ExpenseDetailPaymentMethodEnum'
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        payee:
+          allOf:
+          - $ref: '#/components/schemas/Payee'
+          readOnly: true
+      required:
+      - amount
+      - category
+      - id
+      - payee
+      - user
+    ExpenseDetailPaymentMethodEnum:
+      enum:
+      - Cash
+      - Credit Card
+      - Debit Card
+      - Bank Transfer
+      - Online Wallet
+      - Mobile Money
+      type: string
+      description: |-
+        * `Cash` - Cash
+        * `Credit Card` - Credit Card
+        * `Debit Card` - Debit Card
+        * `Bank Transfer` - Bank Transfer
+        * `Online Wallet` - Online Wallet
+        * `Mobile Money` - Mobile Money
     Inventory:
       type: object
       description: |-
@@ -5877,6 +6454,16 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedCategory:
+      type: object
+      description: Serializes the essential fields of the Category model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category_name:
+          type: string
+          maxLength: 100
     PatchedConnectivity:
       type: object
       properties:
@@ -5919,6 +6506,42 @@ components:
           maxLength: 45
         region:
           type: integer
+    PatchedExpenseDetail:
+      type: object
+      description: |-
+        The main serializer for an Expense record, nesting all related data
+        (User, Category, Payee, Address, and Region).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          readOnly: true
+        expense_date:
+          type: string
+          format: date
+          title: Date
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Amount Spent
+        description:
+          type: string
+          nullable: true
+          title: Details/Notes
+        payment_method:
+          $ref: '#/components/schemas/ExpenseDetailPaymentMethodEnum'
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        payee:
+          allOf:
+          - $ref: '#/components/schemas/Payee'
+          readOnly: true
     PatchedInventory:
       type: object
       description: |-
@@ -6018,6 +6641,23 @@ components:
           readOnly: true
         name:
           $ref: '#/components/schemas/PanelTypeNameEnum'
+    PatchedPayee:
+      type: object
+      description: Serializes the Payee model, including nested Address details.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        payee_name:
+          type: string
+          maxLength: 150
+        phone_number:
+          type: string
+          maxLength: 128
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          readOnly: true
     PatchedPaymentMethod:
       type: object
       properties:
@@ -6194,7 +6834,6 @@ components:
         expected_delivery_date:
           type: string
           format: date-time
-          nullable: true
         po_status:
           $ref: '#/components/schemas/PoStatusEnum'
         po_status_display:
@@ -6523,6 +7162,28 @@ components:
           maxLength: 45
         district:
           type: integer
+    Payee:
+      type: object
+      description: Serializes the Payee model, including nested Address details.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        payee_name:
+          type: string
+          maxLength: 150
+        phone_number:
+          type: string
+          maxLength: 128
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          readOnly: true
+      required:
+      - address
+      - id
+      - payee_name
+      - phone_number
     PaymentMethod:
       type: object
       properties:
@@ -6553,20 +7214,6 @@ components:
       - id
       - name
       - updated_at
-    PaymentMethodEnum:
-      enum:
-      - CASH
-      - CARD
-      - MOMO
-      - TRANSFER
-      - OTHER
-      type: string
-      description: |-
-        * `CASH` - Cash
-        * `CARD` - Credit/Debit Card
-        * `MOMO` - Mobile Money
-        * `TRANSFER` - Bank Transfer
-        * `OTHER` - Other
     PaymentStatusEnum:
       enum:
       - PENDING
@@ -6974,7 +7621,6 @@ components:
         expected_delivery_date:
           type: string
           format: date-time
-          nullable: true
         po_status:
           $ref: '#/components/schemas/PoStatusEnum'
         po_status_display:
@@ -7000,6 +7646,7 @@ components:
       required:
       - created_by
       - created_by_name
+      - expected_delivery_date
       - id
       - items
       - order_total
@@ -7121,7 +7768,7 @@ components:
           readOnly: true
         payment_method:
           allOf:
-          - $ref: '#/components/schemas/PaymentMethodEnum'
+          - $ref: '#/components/schemas/SaleDetailPaymentMethodEnum'
           readOnly: true
         payment_status:
           allOf:
@@ -7145,7 +7792,7 @@ components:
           readOnly: true
         customer:
           allOf:
-          - $ref: '#/components/schemas/CustomerRead'
+          - $ref: '#/components/schemas/CustomerDetail'
           readOnly: true
         items:
           type: array
@@ -7165,6 +7812,20 @@ components:
       - sales_outlet_name
       - status
       - total_amount
+    SaleDetailPaymentMethodEnum:
+      enum:
+      - CASH
+      - CARD
+      - MOMO
+      - TRANSFER
+      - OTHER
+      type: string
+      description: |-
+        * `CASH` - Cash
+        * `CARD` - Credit/Debit Card
+        * `MOMO` - Mobile Money
+        * `TRANSFER` - Bank Transfer
+        * `OTHER` - Other
     SaleItemRead:
       type: object
       description: Used for displaying line item details in a completed Sale.
@@ -7230,8 +7891,7 @@ components:
       properties:
         customer_id:
           type: string
-          format: uuid
-          nullable: true
+          readOnly: true
         sales_outlet:
           type: integer
           nullable: true
@@ -7244,6 +7904,7 @@ components:
           items:
             $ref: '#/components/schemas/SaleItemWrite'
       required:
+      - customer_id
       - items
       - payment_method
       - payment_status
@@ -7656,6 +8317,35 @@ components:
       required:
       - first_name
       - id
+      - last_name
+      - phone_number
+    UserDetails:
+      type: object
+      description: Used to safely serialize the user object for the 'user_data' JWT
+        field.
+      properties:
+        phone_number:
+          type: string
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 30
+        last_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        is_verified:
+          type: boolean
+        groups:
+          type: string
+          readOnly: true
+      required:
+      - first_name
+      - groups
       - last_name
       - phone_number
     Ward:

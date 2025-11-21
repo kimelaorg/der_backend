@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views as v
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
+from .custom_mtaa_view import LocationAPIView
 
 
 router = DefaultRouter()
@@ -29,4 +30,7 @@ urlpatterns = [
 
     # Password Reset
     path('password-reset/confirm/', v.ConfirmPasswordResetView.as_view(), name='confirm-password-reset'),
+
+    path('locations/', LocationAPIView.as_view(), name='location-api'),
+
 ]

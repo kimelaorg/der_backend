@@ -4,7 +4,8 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .permissions import IsSalesStaffOrAdmin
-from .sales_models import Sale
+from .sales_models import Sale, CustomerDetails
+from accounts.models import UserProfile
 from .sales_serializers import SaleTransactionSerializer, SaleDetailSerializer, CustomerSerializer
 from django.contrib.auth import get_user_model
 
@@ -14,51 +15,20 @@ User = get_user_model()
 class CustomerGenericView(generics.CreateAPIView):
     serializer_class = CustomerSerializer
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
+    queryset = CustomerDetails.objects.all()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
-        # phone_number = serializer.validated_data.get('phone_number')
-        #
-        # try:
-        #     customer_instance = User.objects.get(phone_number=phone_number)
-        #     created = False
-        #
-        #     response_serializer = CustomerSerializer(customer_instance)
-        #
-        #     # print(f"Customer retrieved: ID {customer_instance.id}")
-        #
-        # except User.DoesNotExist:
-        #     created = True
-        #
-        #     customer_instance = serializer.save()
-        #
-        #     try:
-        #         customer_group = Group.objects.get(name='Customer')
-        #         customer_instance.groups.add(customer_group)
-        #         # print(f"New Customer ID {customer_instance.id} assigned to group 'Customer'")
-        #     except Group.DoesNotExist:
-        #         print("WARNING: 'Customer' group does not exist.")
-        #
-        #     response_serializer = CustomerSerializer(customer_instance)
-        #
-        #     # print(f"New Customer created: ID {customer_instance.id}")
-        #
-        # headers = self.get_success_headers(response_serializer.data)
-        #
-        # status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        #
-        # return Response(response_serializer.data, status=status_code, headers=headers)
+        return Response(serializer.data, status = status.HTTP_201_CREATED)
 
 
 
 class SalesViewSet(
-    mixins.ListModelMixin,         # Enables GET /sales/
-    mixins.RetrieveModelMixin,      # Enables GET /sales/{id}/
-    viewsets.GenericViewSet         # Provides base functionality
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
 ):
     """
     ViewSet for managing Sale transactions, incorporating the RBAC policy.
@@ -67,14 +37,11 @@ class SalesViewSet(
     and SaleDetailSerializer (read/output for list/retrieve).
     """
 
-    permission_classes = [IsSalesStaffOrAdmin]
+    permission_classes = [IsAuthenticated]
 
-    # This must be the primary serializer for DRF's default behavior,
-    # but we override which one is used in get_serializer_class().
     serializer_class = SaleTransactionSerializer
 
-    # You must define a base queryset for the mixins to work.
-    queryset = Sale.objects.all() 
+    queryset = Sale.objects.all()
 
     def get_queryset(self):
         """
@@ -82,19 +49,13 @@ class SalesViewSet(
         - Admin/Staff sees all sales.
         - Regular Sales Staff only sees sales where they are the 'sales_agent'.
         """
-        # Assuming the base queryset is defined on the class level (Sale.objects.all())
-        # If not defined, you must define the queryset explicitly here:
-        # qs = Sale.objects.all().select_related(...)
         qs = super().get_queryset()
 
         user = self.request.user
 
-        # Admin/Staff users see everything
         if user.is_superuser or user.is_staff:
             return qs
 
-        # Regular authenticated users see only their own sales
-        # This assumes the Sale model has a ForeignKey called 'sales_agent' pointing to the User model.
         return qs.filter(sales_agent=user)
 
 
@@ -102,29 +63,17 @@ class SalesViewSet(
         """
         Swaps the serializer based on the action being performed.
         """
-        # Use the transactional/write serializer for input
         if self.action == 'create':
             return SaleTransactionSerializer
 
-        # Use the detail/read serializer for output
         return SaleDetailSerializer
 
 
     def create(self, request, *args, **kwargs):
         """Handles the POST request to record a new sale transaction."""
-
-        # 1. Get the write serializer (SaleTransactionSerializer) using the correct method
         write_serializer = self.get_serializer(data=request.data)
-
-        # Validation (includes stock checks and total amount calculation)
         write_serializer.is_valid(raise_exception=True)
-
-        # The .save() method contains the atomic transaction logic
         sale_instance = write_serializer.save()
-
-        # 2. Return the created sale data using the read serializer (SaleDetailSerializer)
-        # We explicitly call SaleDetailSerializer here to get the correct output format.
-        # NOTE: This line requires SaleDetailSerializer to be imported.
         read_serializer = SaleDetailSerializer(sale_instance)
 
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)

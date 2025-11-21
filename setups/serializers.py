@@ -11,7 +11,6 @@ from django.contrib.auth import get_user_model
 # to link setup records to the creator/modifier.
 User = get_user_model()
 
-# --- Core Setup Models ---
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,6 +102,7 @@ class RegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Region
         fields = '__all__'
+        read_only_fields = ['id']
 
 class DistrictSerializer(serializers.ModelSerializer):
     # Display the name of the parent region

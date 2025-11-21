@@ -26,7 +26,7 @@ class PurchaseOrder(models.Model):
     )
     supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, related_name='purchase_orders')
     po_date = models.DateTimeField(default=timezone.now, help_text="Date the PO was created.")
-    expected_delivery_date = models.DateTimeField(null=True, blank=True)
+    expected_delivery_date = models.DateTimeField()
     po_status = models.CharField(max_length=20, choices=PO_STATUS_CHOICES, default='DRAFT')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, help_text="Staff member who created the PO.")
     order_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

@@ -3,6 +3,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import uuid
+from inventory.models import WarehouseLocation
 from django.conf import settings
 from setups.models import Region
 from datetime import timedelta
@@ -115,6 +116,29 @@ class Otp(models.Model):
             token_type=token_type,
             expires_at=expiry_time
         )
+
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+
+    # This links the user to their primary work location
+    assigned_location = models.ForeignKey(
+        WarehouseLocation,
+        on_delete=models.SET_NULL, # If the location is deleted, users won't be
+        null=True,
+        blank=True,
+        related_name='assigned_users',
+        verbose_name="Assigned Sales Outlet"
+    )
+
+    def __str__(self):
+        name = f'{self.user.first_name} {self.user.last_name}'
+        return f"Profile for {name.title()}"
 
 
 class Address(models.Model):

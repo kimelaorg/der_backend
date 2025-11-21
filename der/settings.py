@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     # project app
     'accounts',
     'notifications',
-    # 'rbac',
+    'expenses',
     'setups',
     'products',
     'mega',

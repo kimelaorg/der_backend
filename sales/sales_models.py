@@ -1,6 +1,17 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from phonenumber_field.modelfields import PhoneNumberField
+
+
+
+class CustomerDetails(models.Model):
+    phone_number = PhoneNumberField(region = 'TZ', db_index = True)
+    first_name = models.CharField(max_length = 30)
+    middle_name = models.CharField(max_length = 100)
+    last_name = models.CharField(max_length = 100)
+    email = models.EmailField()
+
 
 # --- Shared Choices for Consistency ---
 SALE_STATUS_CHOICES = [
@@ -32,7 +43,7 @@ class Sale(models.Model):
 
     # Audit & Tracking Context
     customer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        CustomerDetails,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

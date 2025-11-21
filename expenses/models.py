@@ -1,55 +1,110 @@
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
+from accounts.models import Address
 
-# Create your models here.
+
+class Category(models.Model):
+    category_name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Category Name'
+    )
+
+    category_description = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='Description'
+    )
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['category_name']
+
+    def __str__(self):
+        return self.category_name
 
 
--- Create a database named 'personal_expenses_db' (optional, you might already have one)
--- The exact command depends on your SQL dialect (e.g., MySQL, PostgreSQL)
--- Example for MySQL:
--- CREATE DATABASE IF NOT EXISTS personal_expenses_db;
--- USE personal_expenses_db;
+class Payee(models.Model):
+    payee_name = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='Payee Name'
+    )
 
--- --------------------------------------------------------
+    phone_number = PhoneNumberField(region = 'TZ', db_index = True)
 
--- Table structure for `Categories`
--- Stores different categories of expenses (e.g., Food, Transport, Bills)
-CREATE TABLE IF NOT EXISTS Categories (
-    category_id INT AUTO_INCREMENT PRIMARY KEY, -- Use SERIAL or INTEGER PRIMARY KEY AUTOINCREMENT for PostgreSQL/SQLite
-    category_name VARCHAR(50) NOT NULL UNIQUE,
-    category_description VARCHAR(255)
-);
+    address = models.ForeignKey(Address, on_delete = models.SET_NULL, null = True)
 
--- --------------------------------------------------------
+    class Meta:
+        verbose_name_plural = "Payees"
+        ordering = ['payee_name']
 
--- Table structure for `Expenses`
--- Stores individual daily expense records
-CREATE TABLE IF NOT EXISTS Expenses (
-    expense_id INT AUTO_INCREMENT PRIMARY KEY, -- Use SERIAL or INTEGER PRIMARY KEY AUTOINCREMENT for PostgreSQL/SQLite
-    expense_date DATE NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    description VARCHAR(255),
-    category_id INT NOT NULL,
-    payment_method VARCHAR(50), -- e.g., Cash, Credit Card, Debit Card
+    def __str__(self):
+        return self.payee_name
 
-    -- Add a foreign key constraint to link expenses to categories
-    FOREIGN KEY (category_id) REFERENCES Categories(category_id)
-);
 
--- --------------------------------------------------------
 
--- Optional: Insert some initial categories into the Categories table
-INSERT INTO Categories (category_name, category_description) VALUES
-('Food & Drink', 'Groceries, dining out, coffee'),
-('Transportation', 'Public transit, gas, car maintenance'),
-('Bills & Utilities', 'Rent, electricity, internet, phone bill'),
-('Shopping', 'Clothing, electronics, household items'),
-('Entertainment', 'Movies, concerts, streaming services'),
-('Health & Wellness', 'Gym membership, medical expenses'),
-('Miscellaneous', 'Other unexpected expenses');
+class Expense(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='User'
+    )
 
--- --------------------------------------------------------
+    expense_date = models.DateField(
+        default=timezone.now,
+        verbose_name='Date'
+    )
 
--- Example of how to insert a new daily expense record
--- You would replace the values with your actual daily spending data
-INSERT INTO Expenses (expense_date, amount, description, category_id, payment_method) VALUES
-('2025-11-07', 15.50, 'Lunch at local cafe', (SELECT category_id FROM Categories WHERE category_name = 'Food & Drink'), 'Debit Card');
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Amount Spent'
+    )
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        verbose_name='Category'
+    )
+
+    payee = models.ForeignKey(
+        Payee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Paid To'
+    )
+
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Details/Notes'
+    )
+
+    PAYMENT_METHOD_CHOICES = [
+        ('Cash', 'Cash'),
+        ('Credit Card', 'Credit Card'),
+        ('Debit Card', 'Debit Card'),
+        ('Bank Transfer', 'Bank Transfer'),
+        ('Online Wallet', 'Online Wallet'),
+        ('Mobile Money', 'Mobile Money'),
+    ]
+
+    payment_method = models.CharField(
+        max_length=50,
+        choices=PAYMENT_METHOD_CHOICES,
+        default='Cash',
+        verbose_name='Payment Method'
+    )
+
+    class Meta:
+        verbose_name = "Expense"
+        verbose_name_plural = "Expenses"
+        ordering = ['-expense_date', '-id']
+
+    def __str__(self):
+        return f"{self.expense_date.strftime('%Y-%m-%d')} - ${self.amount} ({self.category.category_name})"

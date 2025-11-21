@@ -2,9 +2,10 @@ from rest_framework import serializers
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import F
-from .sales_models import Sale, SaleItem
+from .sales_models import Sale, SaleItem, CustomerDetails
 from products.models import ProductSpecification
 from inventory.models import WarehouseLocation, StockMovement
+from phonenumber_field.serializerfields import PhoneNumberField
 from django.contrib.auth import get_user_model
 from .serializers import CustomerDetailSerializer
 
@@ -25,15 +26,15 @@ class SaleItemReadSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     """Used for displaying customer details in a completed Sale."""
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    phone_number = PhoneNumberField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+
     class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'phone_number', 'email')
-        extra_kwargs = {
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'phone_number': {'required': False},
-            'email': {'required': False},
-        }
+        model = CustomerDetails
+        fields = ('first_name', 'last_name', 'phone_number', 'email')
+
 
 # --- 2. Transactional Serializer (Write-Only) ---
 
@@ -55,9 +56,10 @@ class SaleTransactionSerializer(serializers.Serializer):
     and updates the Inventory quantity. This is the POS endpoint serializer.
     """
     # Header fields
-    customer_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True
-    )
+    customer_id = serializers.CharField(read_only = True)
+    # customer_id = serializers.PrimaryKeyRelatedField(
+    #     queryset=User.objects.all(), required=False, allow_null=True
+    # )
     sales_outlet = serializers.PrimaryKeyRelatedField(
         queryset=WarehouseLocation.objects.all(),
         required=False, allow_null=True
@@ -133,7 +135,15 @@ class SaleTransactionSerializer(serializers.Serializer):
         # 2. Process Line Items and Update Inventory
         for product_id, update_data in self._inventory_updates.items():
 
-            item_payload = next(item for item in items_data if item['product_specification'].pk == product_id)
+            item_payload = next(
+                (item for item in items_data if item['product_specification'].pk == product_id),
+                None
+            )
+
+            if item_payload is None:
+                # In a real-world scenario, you might want a more detailed log or error here
+                # if this check is unexpectedly hit.
+                continue
 
             product_spec = update_data['spec']
             quantity_sold = update_data['quantity_sold']

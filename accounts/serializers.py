@@ -116,14 +116,14 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['phone_number', 'first_name', 'last_name', 'email', 'is_verified', 'is_staff', 'groups']
+        fields = ['phone_number', 'first_name', 'last_name', 'email', 'is_verified', 'groups']
 
     # 2. Define the method to get group names
     def get_groups(self, obj):
         """Returns a list of group names the user belongs to."""
         # The 'obj' here is the User instance
         return list(obj.groups.values_list('name', flat=True))
-        
+
 
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):

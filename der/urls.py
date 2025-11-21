@@ -23,7 +23,7 @@ urlpatterns = [
 
     # Including urls of the apps
     path('api/auth/', include('accounts.urls')),
-    # path('api/rbac/', include('rbac.urls')),
+    path('api/expenses/', include('expenses.urls')),
     path('api/setups/', include('setups.urls')),
     path('api/mega/', include('mega.urls')),
     path('api/products/', include('products.urls')),
