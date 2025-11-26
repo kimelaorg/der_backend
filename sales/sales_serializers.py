@@ -8,6 +8,7 @@ from inventory.models import WarehouseLocation, StockMovement
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.contrib.auth import get_user_model
 from .serializers import CustomerDetailSerializer
+from accounts.serializers import UserDetailsSerializer
 
 
 User = get_user_model()
@@ -17,11 +18,12 @@ class SaleItemReadSerializer(serializers.ModelSerializer):
     """Used for displaying line item details in a completed Sale."""
     product_sku = serializers.CharField(source='product_specification.sku', read_only=True)
     product_name = serializers.CharField(source='product_specification.product.name', read_only=True)
+    model = serializers.CharField(source='product_specification.model', read_only=True)
 
     class Meta:
         model = SaleItem
         fields = ('id', 'product_specification', 'product_sku', 'product_name',
-                  'quantity', 'unit_price', 'unit_measure')
+                  'quantity', 'unit_price', 'unit_measure', 'model')
         read_only_fields = fields
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -33,7 +35,8 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomerDetails
-        fields = ('first_name', 'last_name', 'phone_number', 'email')
+        fields = ('id','first_name', 'last_name', 'phone_number', 'email')
+        read_only_fields = ['id']
 
 
 # --- 2. Transactional Serializer (Write-Only) ---
@@ -56,9 +59,9 @@ class SaleTransactionSerializer(serializers.Serializer):
     and updates the Inventory quantity. This is the POS endpoint serializer.
     """
     # Header fields
-    customer_id = serializers.CharField(read_only = True)
+    customer_id = serializers.CharField(required=False, allow_null=True)
     # customer_id = serializers.PrimaryKeyRelatedField(
-    #     queryset=User.objects.all(), required=False, allow_null=True
+    #     queryset=CustomerDetails.objects.all(), required=False, allow_null=True
     # )
     sales_outlet = serializers.PrimaryKeyRelatedField(
         queryset=WarehouseLocation.objects.all(),
@@ -102,7 +105,7 @@ class SaleTransactionSerializer(serializers.Serializer):
             # Check 2: Stock Availability (CRITICAL)
             if not hasattr(spec_instance, 'inventory') or quantity > spec_instance.inventory.quantity_in_stock:
                  raise serializers.ValidationError({
-                    "items": f"Insufficient stock for SKU {spec_instance.sku}. Requested {quantity}, but only {spec_instance.inventory.quantity_in_stock} available."
+                    "items": f"Insufficient stock for {spec_instance.model}. Requested {quantity}, but only {spec_instance.inventory.quantity_in_stock} available."
                 })
 
             # Check 3: Calculation
@@ -180,7 +183,6 @@ class SaleDetailSerializer(serializers.ModelSerializer):
     """Used to retrieve and display a completed sales invoice."""
     customer = CustomerDetailSerializer(read_only=True)
     items = SaleItemReadSerializer(many=True, read_only=True)
-    # Using ReadOnlyField for efficient nested display
     sales_agent_name = serializers.ReadOnlyField(source='sales_agent.get_full_name')
     sales_outlet_name = serializers.ReadOnlyField(source='sales_outlet.name')
 

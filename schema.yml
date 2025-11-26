@@ -32,6 +32,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConfirmRegistration'
           description: ''
+  /api/auth/locations/:
+    get:
+      operationId: api_auth_locations_retrieve
+      description: Generic view to fetch hierarchical location data (Regions, Districts,
+        Wards).
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/auth/login/:
     post:
       operationId: api_auth_login_create
@@ -1114,177 +1128,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Inventory'
           description: ''
-  /api/mega/products/:
-    get:
-      operationId: api_mega_products_list
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MegaProduct'
-          description: ''
-    post:
-      operationId: api_mega_products_create
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MegaProduct'
-          description: ''
-  /api/mega/products/{id}/:
-    get:
-      operationId: api_mega_products_retrieve
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Product.
-        required: true
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MegaProduct'
-          description: ''
-    put:
-      operationId: api_mega_products_update
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Product.
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/MegaProduct'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MegaProduct'
-          description: ''
-    patch:
-      operationId: api_mega_products_partial_update
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Product.
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedMegaProduct'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedMegaProduct'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedMegaProduct'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MegaProduct'
-          description: ''
-    delete:
-      operationId: api_mega_products_destroy
-      description: |-
-        A ViewSet for viewing and editing Product instances, including nested
-        creation of ProductSpecification and related components.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Product.
-        required: true
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '204':
-          description: No response body
   /api/products/digital-products/:
     get:
       operationId: api_products_digital_products_list
@@ -1446,30 +1289,6 @@ paths:
         '204':
           description: No response body
   /api/products/images/:
-    get:
-      operationId: api_products_images_list
-      parameters:
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductImage'
-          description: ''
     post:
       operationId: api_products_images_create
       tags:
@@ -1497,104 +1316,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductImage'
           description: ''
-  /api/products/images/{id}/:
-    get:
-      operationId: api_products_images_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this product image.
-        required: true
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductImage'
-          description: ''
-    put:
-      operationId: api_products_images_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this product image.
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductImage'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ProductImage'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ProductImage'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductImage'
-          description: ''
-    patch:
-      operationId: api_products_images_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this product image.
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImage'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImage'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImage'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductImage'
-          description: ''
+  /api/products/images-delete/{id}:
     delete:
-      operationId: api_products_images_destroy
+      operationId: api_products_images_delete_destroy
       parameters:
       - in: path
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this product image.
         required: true
       tags:
       - api
@@ -1605,6 +1334,31 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/products/images-list/:
+    get:
+      operationId: api_products_images_list_list
+      parameters:
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductSpecificationImage'
+          description: ''
   /api/products/products/:
     get:
       operationId: api_products_products_list
@@ -1776,6 +1530,10 @@ paths:
         name: brand
         schema:
           type: number
+      - in: query
+        name: name
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
@@ -5805,6 +5563,9 @@ components:
       type: object
       description: Used for displaying customer details in a completed Sale.
       properties:
+        id:
+          type: integer
+          readOnly: true
         first_name:
           type: string
         last_name:
@@ -5814,6 +5575,8 @@ components:
         email:
           type: string
           format: email
+      required:
+      - id
     CustomerDetail:
       type: object
       description: Minimal serializer for displaying customer info within an Order.
@@ -6094,182 +5857,6 @@ components:
       required:
       - password
       - phone_number
-    MegaElectricalSpecification:
-      type: object
-      properties:
-        voltage:
-          type: string
-          maxLength: 50
-        max_wattage:
-          type: string
-          nullable: true
-          maxLength: 50
-        frequency:
-          type: string
-          maxLength: 20
-    MegaProduct:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 300
-        description:
-          type: string
-        category:
-          type: integer
-        category_name:
-          type: string
-          readOnly: true
-        is_active:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        specification:
-          $ref: '#/components/schemas/MegaProductSpecification'
-      required:
-      - category
-      - category_name
-      - created_at
-      - description
-      - id
-      - name
-      - specification
-    MegaProductConnectivity:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        connectivity:
-          type: integer
-        connectivity_name:
-          type: string
-          readOnly: true
-        connectivity_count:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-          nullable: true
-      required:
-      - connectivity
-      - connectivity_name
-      - id
-    MegaProductImage:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        image:
-          type: string
-          format: uri
-      required:
-      - id
-      - image
-    MegaProductSpecification:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        sku:
-          type: string
-          readOnly: true
-        brand:
-          allOf:
-          - $ref: '#/components/schemas/SupportedResolution'
-          readOnly: true
-        screen_size:
-          allOf:
-          - $ref: '#/components/schemas/ScreenSize'
-          readOnly: true
-        screen_size_id:
-          type: integer
-          writeOnly: true
-        brand_id:
-          type: integer
-          writeOnly: true
-        resolution:
-          allOf:
-          - $ref: '#/components/schemas/Brand'
-          readOnly: true
-        resolution_id:
-          type: integer
-          writeOnly: true
-        panel_type_id:
-          type: integer
-          writeOnly: true
-        panel_type:
-          allOf:
-          - $ref: '#/components/schemas/PanelType'
-          readOnly: true
-        original_price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        sale_price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        model:
-          type: string
-          maxLength: 255
-        color:
-          type: string
-          nullable: true
-          maxLength: 20
-        smart_features:
-          type: boolean
-        supported_internet_services:
-          type: array
-          items:
-            type: integer
-        images:
-          type: array
-          items:
-            $ref: '#/components/schemas/MegaProductImage'
-        videos:
-          type: array
-          items:
-            $ref: '#/components/schemas/MegaProductVideo'
-        connectivity:
-          type: array
-          items:
-            $ref: '#/components/schemas/MegaProductConnectivity'
-        electrical_specs:
-          $ref: '#/components/schemas/MegaElectricalSpecification'
-      required:
-      - brand
-      - brand_id
-      - id
-      - model
-      - original_price
-      - panel_type
-      - panel_type_id
-      - resolution
-      - resolution_id
-      - sale_price
-      - screen_size
-      - screen_size_id
-      - sku
-    MegaProductVideo:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        video:
-          type: string
-          format: uri
-      required:
-      - id
-      - video
     NewStaff:
       type: object
       description: Used by an Admin to create a new staff user with a temporary password.
@@ -6286,8 +5873,24 @@ components:
         last_name:
           type: string
           maxLength: 100
+        groups:
+          type: array
+          items:
+            type: integer
+        is_staff:
+          type: boolean
+          readOnly: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        is_default_password:
+          type: boolean
+          readOnly: true
       required:
       - first_name
+      - is_default_password
+      - is_staff
+      - is_verified
       - last_name
       - middle_name
       - phone_number
@@ -6606,30 +6209,6 @@ components:
           $ref: '#/components/schemas/LicenceTypeNameEnum'
         description:
           type: string
-    PatchedMegaProduct:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 300
-        description:
-          type: string
-        category:
-          type: integer
-        category_name:
-          type: string
-          readOnly: true
-        is_active:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        specification:
-          $ref: '#/components/schemas/MegaProductSpecification'
     PatchedPanelType:
       type: object
       properties:
@@ -6738,17 +6317,6 @@ components:
         parent_category:
           type: integer
           nullable: true
-    PatchedProductImage:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        image:
-          type: string
-          format: uri
-        product:
-          type: integer
     PatchedProductSpecification:
       type: object
       properties:
@@ -6768,11 +6336,11 @@ components:
         sku:
           type: string
           readOnly: true
-        original_price:
+        actual_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        sale_price:
+        discounted_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
@@ -6792,10 +6360,13 @@ components:
           type: integer
         screen_size:
           type: integer
+          nullable: true
         resolution:
           type: integer
+          nullable: true
         panel_type:
           type: integer
+          nullable: true
     PatchedProductVideo:
       type: object
       properties:
@@ -7333,11 +6904,11 @@ components:
         id:
           type: integer
           readOnly: true
+        product:
+          type: integer
         image:
           type: string
           format: uri
-        product:
-          type: integer
       required:
       - id
       - image
@@ -7361,11 +6932,11 @@ components:
         sku:
           type: string
           readOnly: true
-        original_price:
+        actual_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        sale_price:
+        discounted_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
@@ -7385,21 +6956,55 @@ components:
           type: integer
         screen_size:
           type: integer
+          nullable: true
         resolution:
           type: integer
+          nullable: true
         panel_type:
           type: integer
+          nullable: true
       required:
+      - actual_price
       - brand
+      - discounted_price
       - id
       - model
-      - original_price
-      - panel_type
       - product
-      - resolution
-      - sale_price
-      - screen_size
       - sku
+    ProductSpecificationImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        productName:
+          type: string
+          readOnly: true
+        productDescription:
+          type: string
+          readOnly: true
+        productDiscountedPrice:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        productActualPrice:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+          readOnly: true
+      required:
+      - id
+      - images
+      - productActualPrice
+      - productDescription
+      - productDiscountedPrice
+      - productName
     ProductVideo:
       type: object
       properties:
@@ -7540,17 +7145,20 @@ components:
         panel_type_name:
           type: string
           readOnly: true
+        model:
+          type: string
+          maxLength: 255
         supported_internet_services_names:
           type: string
           readOnly: true
         sku:
           type: string
           maxLength: 50
-        original_price:
+        actual_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        sale_price:
+        discounted_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
@@ -7562,13 +7170,16 @@ components:
           type: boolean
         screen_size:
           type: integer
+          nullable: true
         brand_name:
           type: string
           readOnly: true
         resolution:
           type: integer
+          nullable: true
         panel_type:
           type: integer
+          nullable: true
         supported_internet_services:
           type: array
           items:
@@ -7577,19 +7188,17 @@ components:
           type: string
           readOnly: true
       required:
+      - actual_price
       - brand_name
       - connectivity_details
+      - discounted_price
       - electrical_specs
       - id
       - images
-      - original_price
-      - panel_type
+      - model
       - panel_type_name
       - quantity_in_stock
-      - resolution
       - resolution_name
-      - sale_price
-      - screen_size
       - screen_size_name
       - sku
       - supported_internet_services_names
@@ -7814,18 +7423,18 @@ components:
       - total_amount
     SaleDetailPaymentMethodEnum:
       enum:
-      - CASH
-      - CARD
+      - Cash
+      - Card
       - MOMO
-      - TRANSFER
-      - OTHER
+      - Transfer
+      - Other
       type: string
       description: |-
-        * `CASH` - Cash
-        * `CARD` - Credit/Debit Card
+        * `Cash` - Cash
+        * `Card` - Credit/Debit Card
         * `MOMO` - Mobile Money
-        * `TRANSFER` - Bank Transfer
-        * `OTHER` - Other
+        * `Transfer` - Bank Transfer
+        * `Other` - Other
     SaleItemRead:
       type: object
       description: Used for displaying line item details in a completed Sale.
@@ -7854,8 +7463,12 @@ components:
           type: string
           readOnly: true
           nullable: true
+        model:
+          type: string
+          readOnly: true
       required:
       - id
+      - model
       - product_name
       - product_sku
       - product_specification
@@ -7891,7 +7504,7 @@ components:
       properties:
         customer_id:
           type: string
-          readOnly: true
+          nullable: true
         sales_outlet:
           type: integer
           nullable: true
@@ -7904,7 +7517,6 @@ components:
           items:
             $ref: '#/components/schemas/SaleItemWrite'
       required:
-      - customer_id
       - items
       - payment_method
       - payment_status

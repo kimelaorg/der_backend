@@ -52,6 +52,12 @@ class ProductSpecificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('sku',)
 
+    def validate(self, data):
+        if data['actual_price'] < data['discounted_price']:
+            raise serializer.ValidationError('Discounted price must not exceed actual price')
+        return data
+
+
     def create(self, validated_data):
         electrical_specs_data = validated_data.pop('electrical_specs', None)
         # 1. POP the list of connectivity items
@@ -117,7 +123,7 @@ class ProductSpecificationSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = '__all__'
+        fields = ('id', 'product', 'image')
 
 # 4. Product Video Management
 class ProductVideoSerializer(serializers.ModelSerializer):
@@ -220,9 +226,9 @@ class PublicProductSpecificationSerializer(serializers.ModelSerializer):
         model = ProductSpecification
         fields = (
             'id', 'electrical_specs', 'images', 'videos', 'connectivity_details',
-            'screen_size_name', 'resolution_name', 'panel_type_name',
-            'supported_internet_services_names', 'sku', 'original_price',
-            'sale_price', 'color', 'smart_features', 'screen_size', 'brand_name',
+            'screen_size_name', 'resolution_name', 'panel_type_name', 'model',
+            'supported_internet_services_names', 'sku', 'actual_price',
+            'discounted_price', 'color', 'smart_features', 'screen_size', 'brand_name',
             'resolution', 'panel_type', 'supported_internet_services', 'quantity_in_stock'
         )
 
@@ -241,3 +247,22 @@ class PublicProductDetailSerializer(serializers.ModelSerializer):
             'category_name', 'is_active', 'product_specs', 'digital_details',
             'created_at', 'updated_at'
         )
+
+
+class ProductSpecificationImageSerializer(serializers.ModelSerializer):
+    productName = serializers.CharField(source='product.name', read_only=True)
+    productDescription = serializers.CharField(source='product.description', read_only=True)
+    productDiscountedPrice = serializers.DecimalField(source='discounted_price', read_only=True, max_digits=10, decimal_places=2)
+    productActualPrice = serializers.DecimalField(source='actual_price', read_only=True, max_digits=10, decimal_places=2)
+    images = PublicProductImageSerializer(source='productimage_set', many=True, read_only=True)
+
+    class Meta:
+        model = ProductSpecification
+        fields = [
+            'id',
+            'productName',
+            'productDescription',
+            'productDiscountedPrice',
+            'productActualPrice',
+            'images'
+        ]

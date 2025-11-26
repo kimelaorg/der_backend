@@ -67,9 +67,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             ("can_toggle_is_staff", "Can change a user's is_staff status"),
         ]
 
-    def __str__(self):
+    def get_full_name(self):
         name = f'{self.first_name} {self.middle_name} {self.last_name}'
         return name.title()
+
+    def __str__(self):
+        return self.get_full_name()
 
 
 # OTP model

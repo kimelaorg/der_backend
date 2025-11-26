@@ -107,12 +107,12 @@ class SaleAuditViewSet(
     # Use the Detail serializer for both list and retrieve actions
     serializer_class = SaleDetailSerializer
 
-    def get_queryset(self):
-        # Optional: Add filtering (e.g., filter by date, sales_outlet, or agent)
-        qs = super().get_queryset()
-
-        # Example filter: Only show sales from the last 30 days
-        # date_limit = timezone.now() - timedelta(days=30)
-        # qs = qs.filter(sale_date__gte=date_limit)
-
-        return qs
+    # def get_queryset(self):
+    #     # Optional: Add filtering (e.g., filter by date, sales_outlet, or agent)
+    #     qs = super().get_queryset()
+    #
+    #     # Example filter: Only show sales from the last 30 days
+    #     # date_limit = timezone.now() - timedelta(days=30)
+    #     # qs = qs.filter(sale_date__gte=date_limit)
+    #
+    #     return qs

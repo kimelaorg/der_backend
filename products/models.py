@@ -46,11 +46,11 @@ class ProductSpecification(models.Model):
     )
 
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name='products')
-    screen_size = models.ForeignKey(ScreenSize, on_delete=models.PROTECT)
-    resolution = models.ForeignKey(SupportedResolution, on_delete=models.PROTECT)
-    panel_type = models.ForeignKey(PanelType, on_delete=models.PROTECT)
-    original_price = models.DecimalField(max_digits=10, decimal_places=2)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2)
+    screen_size = models.ForeignKey(ScreenSize, on_delete=models.PROTECT, null = True)
+    resolution = models.ForeignKey(SupportedResolution, on_delete=models.PROTECT, null = True)
+    panel_type = models.ForeignKey(PanelType, on_delete=models.PROTECT, null = True, blank=True,)
+    actual_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discounted_price = models.DecimalField(max_digits=10, decimal_places=2)
     model = models.CharField(max_length = 255, unique = True)
 
     color = models.CharField(max_length=20, blank=True, null=True)

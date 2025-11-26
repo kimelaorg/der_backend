@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from django.db.models import Prefetch, OuterRef, Subquery, Min
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -8,7 +8,7 @@ from .models import (
     DigitalProduct
 )
 from .serializers import (
-    ProductSerializer, ProductSpecificationSerializer, ProductImageSerializer,
+    ProductSerializer, ProductSpecificationSerializer, ProductImageSerializer, ProductSpecificationImageSerializer,
     ProductVideoSerializer, DigitalProductSerializer, PublicProductDetailSerializer
 )
 from rest_framework.pagination import PageNumberPagination
@@ -50,9 +50,9 @@ class ProductSpecificationViewSet(viewsets.ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['sku', 'color', 'product__name']
 
-class ProductImageViewSet(viewsets.ModelViewSet):
-    queryset = ProductImage.objects.all()
-    serializer_class = ProductImageSerializer
+class ProductImageView(generics.ListAPIView):
+    queryset = ProductSpecification.objects.all()
+    serializer_class = ProductSpecificationImageSerializer
     # permission_classes = [IsAdminUser]
 
     # Search by the SKU the image is attached to
@@ -93,7 +93,7 @@ class PublicProductDetailViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = ProductFilter
 
     search_fields = [
-        'name', 'description', 'brand__name', 'category__name',
+        'name', 'description', 'category__name',
         'product_specs__sku', 'product_specs__color',
         'product_specs__screen_size__name', 'product_specs__resolution__name',
         'product_specs__panel_type__name',
@@ -106,8 +106,7 @@ class PublicProductDetailViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = [
         'name',
         'created_at',
-        'min_sale_price',
-        'brand__name',
+        'min_discounted_price',
         'category__name'
     ]
     ordering = ['-created_at']
@@ -116,7 +115,7 @@ class PublicProductDetailViewSet(viewsets.ReadOnlyModelViewSet):
         # 1. Base Query and Sale Price Annotation Fix
         # We find the MINIMUM sale_price across all associated specs to enable ordering.
         queryset = Product.objects.filter(is_active=True).annotate(
-            min_sale_price=Min('product_specs__sale_price')
+            min_sale_price=Min('product_specs__discounted_price')
         )
 
         # 2. CRITICAL PERFORMANCE OPTIMIZATION & ERROR FIX (Inventory Prefetch)
@@ -147,7 +146,6 @@ class PublicProductDetailViewSet(viewsets.ReadOnlyModelViewSet):
             'digital_details__digitalproductvideo_set'
 
         ).select_related(
-            'brand',
             'category',
             'digital_details',
             'digital_details__license_type',
@@ -155,3 +153,13 @@ class PublicProductDetailViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         return queryset
+
+
+class ProductImageDeleteView(generics.DestroyAPIView):
+    serializer_class = ProductImageSerializer
+    queryset = ProductImage.objects.all()
+
+
+class NewProductImageView(generics.CreateAPIView):
+    serializer_class = ProductImageSerializer
+    queryset = ProductImage.objects.all()

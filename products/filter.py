@@ -18,4 +18,4 @@ class ProductFilter(django_filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = ['brand', 'screen_size'] # Define the fields available in the URL
+        fields = ['name', 'screen_size'] # Define the fields available in the URL

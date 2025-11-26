@@ -13,6 +13,7 @@ class CustomerDetails(models.Model):
     email = models.EmailField()
 
 
+
 # --- Shared Choices for Consistency ---
 SALE_STATUS_CHOICES = [
     ('COMPLETED', 'Completed'),
@@ -21,11 +22,11 @@ SALE_STATUS_CHOICES = [
 ]
 
 PAYMENT_METHOD_CHOICES = [
-    ('CASH', 'Cash'),
-    ('CARD', 'Credit/Debit Card'),
+    ('Cash', 'Cash'),
+    ('Card', 'Credit/Debit Card'),
     ('MOMO', 'Mobile Money'),
-    ('TRANSFER', 'Bank Transfer'),
-    ('OTHER', 'Other'),
+    ('Transfer', 'Bank Transfer'),
+    ('Other', 'Other'),
 ]
 
 PAYMENT_STATUS_CHOICES = [

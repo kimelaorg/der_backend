@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'expenses',
     'setups',
     'products',
-    'mega',
+    # 'mega',
     'inventory',
     'sales',
     # 'payments',
@@ -79,6 +79,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
+    "http://localhost:6581",
 ]
 
 ROOT_URLCONF = 'der.urls'
@@ -188,3 +189,7 @@ AT_API_KEY = config('AT_API_KEY')
 
 OTP_CODE_LENGTH = 6
 OTP_EXPIRATION_TIME = 300 # 5 minutes
+
+MEDIA_ROOT = BASE_DIR / ''
+
+MEDIA_URL = 'Media/'

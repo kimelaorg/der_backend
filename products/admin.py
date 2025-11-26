@@ -9,4 +9,6 @@ from .models import (
 admin.site.register(ProductSpecification)
 admin.site.register(ElectricalSpecification)
 admin.site.register(ProductConnectivity)
+admin.site.register(ProductImage)
+admin.site.register(ProductVideo)
 admin.site.register(Product)

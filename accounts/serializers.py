@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import AuthenticationFailed as af
 from django.core.exceptions import ValidationError as ve
@@ -174,25 +175,47 @@ class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
 class NewStaffSerializer(serializers.ModelSerializer):
     """Used by an Admin to create a new staff user with a temporary password."""
 
+    groups = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(),
+        many=True,
+        required=False,
+        # source='groups'
+    )
+
+    is_staff = serializers.BooleanField(read_only=True)
+    is_verified = serializers.BooleanField(read_only=True)
+    is_default_password = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = User
-        fields = ['phone_number', 'first_name', 'middle_name', 'last_name']
+        fields = ['phone_number', 'first_name', 'middle_name', 'last_name', 'groups', 'is_staff', 'is_verified', 'is_default_password']
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'groups': {'write_only': True}
+        }
 
     def create(self, validated_data):
-        user = User.objects.create(**validated_data)
+        groups_data = validated_data.pop('groups', [])
 
-        # FIX: Use the secure utility function for staff password
         password = generate_secure_password()
 
+        user = User.objects.create(
+            is_staff=True,
+            is_verified=True,
+            is_default_password=True,
+            **validated_data
+        )
+
         user.set_password(password)
-        user.is_verified = True
-        user.is_staff = True
-        user.is_default_password = True
         user.save()
 
-        name = f'{user.first_name} {user.last_name}'
-        # Send the temporary password via SMS for first-time login
+        if groups_data:
+            user.groups.set(groups_data)
+
+        name = f'{user.first_name} {user.middle_name} {user.last_name}'
         sms_to_staff(name, user.phone_number, password)
+
         return user
 
 
